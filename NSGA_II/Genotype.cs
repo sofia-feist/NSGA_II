@@ -7,7 +7,8 @@ namespace NSGA_II
 {
     public class Genotype     
     {
-        Random random = new Random();
+        static Random random = new Random();
+
         public string gene;
 
 
@@ -18,7 +19,7 @@ namespace NSGA_II
         }
 
 
-        // Mutate: Gives genes a small probability of mutation
+        // Mutate: Gives genes a small probability (1/16) of mutation
         public void Mutate()
         {
             StringBuilder newGene = new StringBuilder(gene, gene.Length);
@@ -33,7 +34,7 @@ namespace NSGA_II
 
 
         // Decode: Remaps the gene's binary code (string) to a number between 0 and 1
-        public double Decode(string gene)
+        public double Decode()
         {
             int sum = 0;
             for (int i = gene.Length - 1; i >= 0; i--)

@@ -12,37 +12,56 @@ namespace NSGA_II
     // A fast and elitist multiobjective genetic algorithm: NSGA-II.
     // IEEE transactions on evolutionary computation, 6(2), pp. 182-197.
     // &
-    // Pseudocode at: http://www.cleveralgorithms.com/nature-inspired/evolution/nsga.html
+    // http://www.cleveralgorithms.com/nature-inspired/evolution/nsga.html
     public class NSGAII_Algorithm    
     {
-        public NSGAII_Algorithm(int PopulationSize) 
+        public static bool Minimize = true;
+        public static double probabilityCrossover = 0.98;
+
+        public List<Individual>  population;
+
+        public NSGAII_Algorithm(int PopulationSize, int nGenerations) 
         {
-            Population population = new Population(PopulationSize);
-            population.fastNonDominatedSort();
-            population.Evolve();
-        }
+            int iteration = 0;
+            Population pop = new Population(PopulationSize);
 
+            pop.FastNonDominatedSort();
+            var offspring = pop.Offspring();
 
-        public void crowdingDistance(int numObjectives, List<Individual> front)
-        {
-            int size = front.Count;
-            foreach (var p in front) p.crowdingDistance = 0;
-
-            for (int m = 0; m < numObjectives; m++)
+            while (iteration < nGenerations)
             {
-                front = front.OrderBy(x => x.fitnesses[m]).ToList();    // Ascending or Descending?
+                pop.population.AddRange(offspring);
+                pop.FastNonDominatedSort();
 
-                front[0].crowdingDistance = double.PositiveInfinity;
-                front[size - 1].crowdingDistance = double.PositiveInfinity;
+                var newGeneration = new List<Individual>();
 
-                for (int i = 1; i < size - 1; i++)
+                foreach (var front in pop.fronts)
                 {
-                    double max = front.Max(p => p.fitnesses[m]);
-                    double min = front.Min(p => p.fitnesses[m]);
-                    front[i].crowdingDistance += (front[i+1].fitnesses[m] - front[i-1].fitnesses[m]) / (max - min);
+                    pop.CrowdingDistance(front);
+
+                    if (newGeneration.Count + front.Count > PopulationSize)
+                    {
+                        var orderedFront = front.OrderBy(p => p.rank).ThenByDescending(p => p.crowdingDistance).ToList();
+                        for (int j = newGeneration.Count; j < PopulationSize; j++)
+                            newGeneration.Add(orderedFront[j - newGeneration.Count]);
+                        break;
+                    }
+                    else
+                    {
+                        newGeneration.AddRange(front);
+                    }
                 }
+
+                pop.population = newGeneration;
+                offspring = pop.Offspring();
+
+                iteration++;
             }
+
+            population = pop.population;
         }
+
+        
 
     }
 }

@@ -25,7 +25,7 @@ namespace NSGA_II
         // Evaluate: Evaluates an individual's fitness
         public void Evaluate() //  UPDATE TO RECEIVE OUTSIDE FITNESSES (performance analyses)   ///////////////
         {
-            double x = genotype.Decode() * (1000 + 1000) - 1000; 
+            double x = genotype.genes[0] * (10 + 10) - 10; //genotype.Decode()
             double fitness1 = Math.Pow(x, 2.0);
             double fitness2 = Math.Pow(x - 2.0, 2.0);
 

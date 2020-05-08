@@ -10,12 +10,19 @@ namespace NSGA_II
         static Random random = new Random();
 
         public string gene;
+        public double[] genes;
 
 
         public Genotype(int nBytes = 16)
         {
             for (int i = 0; i < nBytes; i++)
                 gene += random.NextDouble() < 0.5 ? "1" : "0";
+
+            genes = new double[2];
+            for (int i = 0; i < genes.Length; i++)
+            {
+                genes[i] = random.NextDouble();
+            }
         }
 
 
@@ -28,6 +35,10 @@ namespace NSGA_II
             for (int i = 0; i < gene.Length; i++)
                 if (random.NextDouble() < probabilityMutation)
                     newGene[i] = (newGene[i] == '1') ? '0' : '1';
+
+            for (int i = 0; i < genes.Length; i++)
+                if (random.NextDouble() < probabilityMutation)
+                    genes[i] = random.NextDouble();
 
             gene = newGene.ToString();
         }

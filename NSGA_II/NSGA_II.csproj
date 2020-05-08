@@ -35,6 +35,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
@@ -56,13 +57,26 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NSGAII_Visualizer.cs" />
+    <Compile Include="NSGAII_Editor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NSGAII_Editor.Designer.cs">
+      <DependentUpon>NSGAII_Editor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NSGAII_GHComponent_Attributes.cs" />
     <Compile Include="NSGAII_Algorithm.cs" />
     <Compile Include="Population.cs" />
     <Compile Include="Individual.cs" />
     <Compile Include="Genotype.cs" />
-    <Compile Include="NSGAII_Optimization.cs" />
+    <Compile Include="NSGAII_GHComponent.cs" />
     <Compile Include="NSGA_II_Info.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="NSGAII_Editor.resx">
+      <DependentUpon>NSGAII_Editor.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

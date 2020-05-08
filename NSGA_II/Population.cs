@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Grasshopper.Kernel;
 using System.Linq;
 
 
@@ -7,6 +8,7 @@ namespace NSGA_II
 {
     public class Population
     {
+        GH_Component GHComponent;
         static Random random = new Random();
 
         int populationSize;
@@ -16,9 +18,11 @@ namespace NSGA_II
 
 
 
-        public Population(int size)
+        public Population(GH_Component _GHComponent, int size)
         {
+            GHComponent = _GHComponent;
             populationSize = size;
+
             population = new List<Individual>();
 
             for (int i = 0; i < populationSize; i++)

@@ -26,16 +26,13 @@ namespace NSGA_II
         // Registers all the input parameters for this component.
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         { 
-            pManager.AddNumberParameter("Genes", "G", "Parameters to optimize", GH_ParamAccess.list);   // Genes
+            pManager.AddNumberParameter("Genes", "G", "Parameters to optimize", GH_ParamAccess.list);
             pManager.AddNumberParameter("Objectives", "O", "Objectives/Fitnesses to optimize", GH_ParamAccess.list);   // Fitness
         }
 
 
         // Registers all the output parameters for this component.
-        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
-        {
-            pManager.AddPointParameter("Output", "O", "Output Result", GH_ParamAccess.list);
-        }
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager) { }
 
 
         // Solves the Component Solution
@@ -43,45 +40,6 @@ namespace NSGA_II
         /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            List<double> genes = new List<double>();
-            if (!DA.GetDataList("Genes", genes)) { return; }
-
-            List<double> objectives = new List<double>();
-            if (!DA.GetDataList("Objectives", objectives)) { return; }
-
-
-            //List<GH_NumberSlider> parameterSliders = new List<GH_NumberSlider>();
-
-            //foreach (IGH_Param source in Params.Input[2].Sources)
-            //{
-            //    GH_NumberSlider slider = source as GH_NumberSlider;
-
-            //    if (slider != null)
-            //        parameterSliders.Add(slider);
-            //}
-
-            //foreach (GH_NumberSlider slider in parameterSliders)
-            //{
-            //    slider.Slider.Value = (decimal)random.NextDouble() * (slider.Slider.Maximum - slider.Slider.Minimum) + slider.Slider.Minimum;
-            //}
-
-
-
-
-            //NSGAII_Algorithm nsgaII = new NSGAII_Algorithm();
-            //nsgaII.NSGAII();
-
-            //List<Point2d> solutions = new List<Point2d>();
-
-            //foreach (var individual in nsgaII.population)
-            //{
-            //    double x = individual.fitnesses[0];
-            //    double y = individual.fitnesses[1];
-            //    Point2d pt = new Point2d(x,y);
-            //    solutions.Add(pt);
-            //}
-            
-            //DA.SetDataList("Output", solutions);
         }
 
 
@@ -113,10 +71,7 @@ namespace NSGA_II
             NSGAII_Editor editor = new NSGAII_Editor(this);
             GH_WindowsFormUtil.CenterFormOnCursor(editor, true);
 
-            if (editor.ShowDialog() == DialogResult.OK)
-            {
-                ClearData();
-            }
+            editor.ShowDialog();
         }
 
 

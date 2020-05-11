@@ -23,6 +23,9 @@ namespace NSGA_II
             GHComponent = _GHComponent;
             populationSize = size;
 
+            nonDominatedFront = new List<Individual>();
+            fronts = new List<List<Individual>>();
+
             population = new List<Individual>();
 
             for (int i = 0; i < populationSize; i++)
@@ -58,7 +61,7 @@ namespace NSGA_II
         private Individual SelectParent()
         {
             int chosen = (int)Math.Floor(((double)populationSize - 1e-3) * Math.Pow((random.NextDouble()), 2));
-            return population[chosen];
+            return population[0];//chosen];
         }
 
         private Individual Breed(Individual a, Individual b)
@@ -88,8 +91,8 @@ namespace NSGA_II
         // FastNonDominatedSort: Sorts population
         public void FastNonDominatedSort()
         {
-            nonDominatedFront = new List<Individual>();
-            fronts = new List<List<Individual>>();
+            nonDominatedFront.Clear();
+            fronts.Clear();
 
             for (int i = 0; i < population.Count; i++)
             {
@@ -140,6 +143,9 @@ namespace NSGA_II
                 if (nextFront.Count != 0)
                     fronts.Add(nextFront);
             }
+
+            //if (fronts.SelectMany(i => i).Count() < populationSize)
+            //    throw new InvalidOperationException("Population bug; FIX THIS.");
 
             population = fronts.SelectMany(i => i).ToList();
         }

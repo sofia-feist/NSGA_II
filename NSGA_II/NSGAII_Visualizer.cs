@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Special;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -16,24 +17,28 @@ namespace NSGA_II
     {
         NSGAII_Editor Editor;
 
+        GH_Component GHComponent;
+
         public Chart ParetoChart;
 
-        public Label TimeElapsed;
-        public Label CurrentGeneration;
         public Label Population;
+        public Label CurrentGeneration;
+        public Label TimeElapsed;
+        public Label nGenes;
+        public Label nObjectives;
 
-        TextBox infoTextBox;
-        ToolTip solutionInformation = new ToolTip();
+        TextBox solutionInfo;
+        
 
         public NSGAII_Visualizer(NSGAII_Editor editor, GH_Component _GHComponent)
         {
             Editor = editor;
+            GHComponent = _GHComponent;
 
             InitializeParetoChart();
-            Editor.Controls.Add(ParetoChart);
-
+            InitializeStatistics();
             InitializeTexbox();
-            InitializeStatistics(_GHComponent);
+            
         }
 
 
@@ -50,51 +55,67 @@ namespace NSGA_II
             };
 
             // CHART AREA
-            ChartArea chartArea = new ChartArea();
+            ChartArea chartArea = new ChartArea
+            { 
+                Name = "ChartArea",
+                BackColor = Color.White
+            };
             ParetoChart.ChartAreas.Add(chartArea);
-            //ParetoChart.ChartAreas[0].AxisX.ScaleView.Zoomable = true;
-            //ParetoChart.ChartAreas[0].AxisY.ScaleView.Zoomable = true;
-
+            //ParetoChart.ChartAreas["ChartArea"].AxisX.Minimum = 0;     // UPDATE WITH SLIDER INFO
+            //ParetoChart.ChartAreas["ChartArea"].AxisX.Interval = 4;
+            ParetoChart.ChartAreas["ChartArea"].AxisX.ScaleView.Zoomable = true;
+            //ParetoChart.ChartAreas["ChartArea"].AxisY.Minimum = 0;
+            //ParetoChart.ChartAreas["ChartArea"].AxisY.Interval = 4;
+            ParetoChart.ChartAreas["ChartArea"].AxisY.ScaleView.Zoomable = true;
+             
             // LEGEND
             Legend legend = new Legend();
             ParetoChart.Legends.Add(legend);
 
             // SERIES
-            Series paretoSeries = new Series
-            {
-                Name = "Pareto Solutions",
-                ChartType = SeriesChartType.FastPoint,
-                Palette = ChartColorPalette.SeaGreen
-            };
-            ParetoChart.Series.Add(paretoSeries);
-
             Series historySeries = new Series
             {
                 Name = "Solution History",
                 ChartType = SeriesChartType.FastPoint,
+                MarkerSize = 6,
                 Color = Color.LightGray
             };
             ParetoChart.Series.Add(historySeries);
 
+            Series paretoSeries = new Series
+            {
+                Name = "Pareto Solutions",
+                ChartType = SeriesChartType.FastPoint,
+                MarkerSize = 8,
+                Palette = ChartColorPalette.SeaGreen
+            };
+            ParetoChart.Series.Add(paretoSeries);
+
             // EVENTS
             ParetoChart.MouseWheel += Chart_MouseWheel;
             ParetoChart.MouseMove += Chart_MouseMove;
+
+            Editor.Controls.Add(ParetoChart);
         }
 
         private void Chart_MouseMove(object sender, MouseEventArgs e)
         {
-            solutionInformation.RemoveAll();
-
             HitTestResult result = ParetoChart.HitTest(e.X, e.Y);
 
             if (result.ChartElementType == ChartElementType.DataPoint)
-            {            
-                double x = result.Series.Points[result.PointIndex].XValue;
-                double y = result.Series.Points[result.PointIndex].YValues[0];
-                //solutionInformation.Show("x: " + x + ", y: " + y, ParetoChart);
-                solutionInformation.SetToolTip(infoTextBox, "x: " + x + ", y: " + y);
+            {
+                //string xLabel = 
+                double xCoord = Math.Round(result.Series.Points[result.PointIndex].XValue, 3);
+                double yCoord = Math.Round(result.Series.Points[result.PointIndex].YValues[0], 3);
 
-                // DO STUFF HERE
+                solutionInfo.Visible = true;
+                solutionInfo.Location = new Point(ParetoChart.Location.X + e.X, ParetoChart.Location.Y + e.Y);
+                solutionInfo.Text = $"x: {xCoord}\r\ny: {yCoord}";
+                solutionInfo.BringToFront();
+            }
+            else
+            {
+                solutionInfo.Visible = false;
             }
         }
 
@@ -103,43 +124,73 @@ namespace NSGA_II
             var xAxis = ParetoChart.ChartAreas[0].AxisX;
             var yAxis = ParetoChart.ChartAreas[0].AxisY;
 
-            var xMin = xAxis.ScaleView.ViewMinimum;
-            var xMax = xAxis.ScaleView.ViewMaximum;
-            var yMin = yAxis.ScaleView.ViewMinimum;
-            var yMax = yAxis.ScaleView.ViewMaximum;
+            double xMin = xAxis.ScaleView.ViewMinimum;
+            double xMax = xAxis.ScaleView.ViewMaximum;
+            double yMin = yAxis.ScaleView.ViewMinimum;
+            double yMax = yAxis.ScaleView.ViewMaximum;
 
-            var posXStart = xAxis.PixelPositionToValue(e.Location.X) - (xMax - xMin) / 4;
-            var posXFinish = xAxis.PixelPositionToValue(e.Location.X) + (xMax - xMin) / 4;
-            var posYStart = yAxis.PixelPositionToValue(e.Location.Y) - (yMax - yMin) / 4;
-            var posYFinish = yAxis.PixelPositionToValue(e.Location.Y) + (yMax - yMin) / 4;
+            if (e.Delta < 0)
+            {
+                xAxis.ScaleView.ZoomReset();    // Fix Zoom out?
+                yAxis.ScaleView.ZoomReset();
+            }
+            else if (e.Delta > 0)
+            {
+                var posXStart = xAxis.PixelPositionToValue(e.X) - (xMax - xMin) / 2;
+                var posXFinish = xAxis.PixelPositionToValue(e.X) + (xMax - xMin) / 2;
+                var posYStart = yAxis.PixelPositionToValue(e.Y) - (yMax - yMin) / 2;
+                var posYFinish = yAxis.PixelPositionToValue(e.Y) + (yMax - yMin) / 2;
 
-            xAxis.ScaleView.Zoom(posXStart, posXFinish);
-            yAxis.ScaleView.Zoom(posYStart, posYFinish);
+                xAxis.ScaleView.Zoom(posXStart, posXFinish);
+                yAxis.ScaleView.Zoom(posYStart, posYFinish);
+            }
         }
 
 
         private void InitializeTexbox()
         {
-            infoTextBox = new TextBox
+            solutionInfo = new TextBox
             {
-                //Location = new Point(e.X, e.Y),
+                AutoSize = true,
                 Multiline = true,
                 Size = new Size(100, 50),
-                ReadOnly = true,
-                Text = "x: 2,22\r\ny: 5, 56",
-                TextAlign = HorizontalAlignment.Center
+                Cursor = Cursors.Arrow,
+                ForeColor = Color.Black,
+                BackColor = Color.FromArgb(250,250,250),
+                TextAlign = HorizontalAlignment.Center,
+                BorderStyle = BorderStyle.None,
+                Enabled = false,
+                Visible = false
             };
 
-            infoTextBox.BringToFront();
-            Editor.Controls.Add(infoTextBox);
+            Editor.Controls.Add(solutionInfo);
         }
+        //RectangleAnnotation solutionInfo = new RectangleAnnotation();
+        ////solutionInfo.Visible = false;
+        //solutionInfo.AllowAnchorMoving = true;
+        //solutionInfo.ForeColor = Color.Black;
+        //solutionInfo.X = double.NaN;
+        //solutionInfo.Y = double.NaN;
+        //solutionInfo.AnchorX = double.NaN;
+        //solutionInfo.AnchorY = double.NaN;
+        ////solutionInfo.Font = new Font("Source Sans Pro", 9); ;
+        //solutionInfo.LineWidth = 0;
+        //solutionInfo.Text = "x: 0000";
+        //solutionInfo.BackColor = Color.FromArgb(30,220,220,220);
+        //solutionInfo.Width = 30;
+        //solutionInfo.Height = 15;
+        //solutionInfo.BringToFront();
 
+        //ParetoChart.Annotations.Add(solutionInfo);
+
+        //solutionInfo.SetAnchor(result.Series.Points[result.PointIndex]);
+        //solutionInfo.AnchorDataPoint = result.Series.Points[result.PointIndex];
 
 
 
 
         // InitializeStatistics: Initialiazes the optimization statistics labels
-        private void InitializeStatistics(GH_Component gh)
+        public void InitializeStatistics()
         {
             Population = new Label
             {
@@ -149,7 +200,7 @@ namespace NSGA_II
                 Text = "Population: " + NSGAII_Algorithm.PopulationSize
             };
             Editor.Controls.Add(Population);
-
+            
 
             CurrentGeneration = new Label
             {
@@ -166,27 +217,27 @@ namespace NSGA_II
                 ForeColor = Color.Gray,
                 Location = new Point(14, 590),
                 Size = new Size(200, 20),
-                Text = "Time Elapsed: " + 0  // Update this
+                Text = "Time Elapsed: " + NSGAII_Algorithm.stopWatch.Elapsed.TotalSeconds 
             };
             Editor.Controls.Add(TimeElapsed);
 
 
-            Label nGenes = new Label
+            nGenes = new Label
             {
                 ForeColor = Color.Gray,
                 Location = new Point(14, 620),
                 Size = new Size(100, 20),
-                Text = "No of Genes: " + gh.Params.Input[0].Sources.Count
+                Text = "No of Genes: " + GHComponent.Params.Input[0].Sources.Count
             };
             Editor.Controls.Add(nGenes);
 
 
-            Label nObjectives = new Label
+            nObjectives = new Label
             {
                 ForeColor = Color.Gray,
                 Location = new Point(14, 650), //440
                 Size = new Size(125, 20),
-                Text = "No of Objectives: " + gh.Params.Input[1].Sources.Count
+                Text = "No of Objectives: " + GHComponent.Params.Input[1].Sources.Count
             };
             Editor.Controls.Add(nObjectives);
         }

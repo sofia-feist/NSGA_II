@@ -8,36 +8,57 @@ using System.Text;
 using Grasshopper.Kernel;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using Grasshopper.Kernel.Special;
 
 namespace NSGA_II
 {
     public partial class NSGAII_Editor : Form
     {
+        GH_Component gh;
         NSGAII_Visualizer visualizer;
         NSGAII_Algorithm nsgaII;
 
         public static bool TimeChecked;
         public static bool GenerationsChecked;
 
+        public List<GH_NumberSlider> geneInputs;
+        public List<IGH_Param> fitnessInputs;
 
-        // Visualizer and algoritm
+
         public NSGAII_Editor(GH_Component _GHComponent)
         {
             visualizer = new NSGAII_Visualizer(this, _GHComponent);
             nsgaII = new NSGAII_Algorithm(visualizer, _GHComponent);
-            
+
+            gh = _GHComponent;
 
             InitializeComponent(); 
 
             TimeChecked = TimeCheckBox.Checked;
             GenerationsChecked = GenerationsCheckBox.Checked;
 
+
+
+            geneInputs = new List<GH_NumberSlider>();
+
+            foreach (IGH_Param source in gh.Params.Input[0].Sources)
+            {
+                GH_NumberSlider slider = source as GH_NumberSlider;
+
+                if (slider != null)
+                    geneInputs.Add(slider); 
+            }
+
+            fitnessInputs = (List<IGH_Param>) gh.Params.Input[1].Sources;
         }
 
         private void NSGAII_EditorWindow(object sender, EventArgs e)
         {
-            
 
+            //foreach (GH_NumberSlider slider in parameterSliders)
+            //{
+            //    slider.Slider.Value = (decimal)random.NextDouble() * (slider.Slider.Maximum - slider.Slider.Minimum) + slider.Slider.Minimum;
+            //}
         }
 
         private void OkButton_Click(object sender, EventArgs e)
@@ -56,14 +77,16 @@ namespace NSGA_II
             if (GenerationsCheckBox.Checked == true)
             {
                 GenerationsChecked = true;
-
                 NGenerationsInputField.Enabled = true;
+
                 GenerationsCheckBox.ForeColor = Color.Black;
                 NGenerationsLabel.ForeColor = Color.Black;
             }
             else
             {
+                GenerationsChecked = false;
                 NGenerationsInputField.Enabled = false;
+
                 NGenerationsLabel.ForeColor = SystemColors.ButtonShadow;
                 GenerationsCheckBox.ForeColor = SystemColors.ButtonShadow;
             }
@@ -79,7 +102,6 @@ namespace NSGA_II
             if (TimeCheckBox.Checked == true)
             {
                 TimeChecked = true;
-
                 DurationTimeHours.Enabled = true;
                 DurationTimeMinutes.Enabled = true;
 
@@ -88,6 +110,7 @@ namespace NSGA_II
             }
             else
             {
+                TimeChecked = false;
                 DurationTimeHours.Enabled = false;
                 DurationTimeMinutes.Enabled = false;
 
@@ -98,36 +121,26 @@ namespace NSGA_II
 
         private void DurationHours_ValueChanged(object sender, EventArgs e)
         {
-            NSGAII_Algorithm.MaxDuration = (double) (DurationTimeHours.Value * 60 + DurationTimeMinutes.Value);
+            NSGAII_Algorithm.MaxDuration = (double) (DurationTimeHours.Value * 3600 + DurationTimeMinutes.Value * 60);
         }
 
         private void DurationMinutes_ValueChanged(object sender, EventArgs e)
         {
-            NSGAII_Algorithm.MaxDuration = (double)(DurationTimeHours.Value * 60 + DurationTimeMinutes.Value);
+            NSGAII_Algorithm.MaxDuration = (double)(DurationTimeHours.Value * 3600 + DurationTimeMinutes.Value * 60);
         }
 
         private void RunOptimizationButton_Click(object sender, EventArgs e)
         {
             if (TimeCheckBox.Checked || GenerationsCheckBox.Checked)
                 nsgaII.NSGAII();
-            else   // IMPROVE!!!!
-                throw new InvalidOperationException("Select a Stop condition"); //AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Select a Stop condition"); 
-
+            else 
+                MessageBox.Show("Select a Stop condition", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void resetButton_Click(object sender, EventArgs e)
         {
-            NSGAII_Algorithm.currentGeneration = 0;
-            visualizer.CurrentGeneration.Text = "Current Generation: " + NSGAII_Algorithm.currentGeneration;
-
-
-            visualizer.ParetoChart.Legends.Clear();
-            visualizer.ParetoChart.Series.Clear();
-            visualizer.ParetoChart.ChartAreas.Clear();
-            visualizer.InitializeParetoChart();
-            //visualizer.ParetoChart.Invalidate();
+            nsgaII.InitializeOptimization();
         }
-
 
     }
 }

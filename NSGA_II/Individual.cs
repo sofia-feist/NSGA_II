@@ -6,6 +6,7 @@ namespace NSGA_II
     public class Individual
     {
         public Genotype genotype;
+        public double[] genes;
 
         public int rank;
         public double crowdingDistance;
@@ -40,12 +41,12 @@ namespace NSGA_II
             if (NSGAII_Algorithm.Minimize)
             {
                 for (int i = 0; i < fitnesses.Count; i++)
-                    if (fitnesses[i] >= other.fitnesses[i]) { return false; } 
+                    if (fitnesses[i] > other.fitnesses[i]) { return false; } 
             }
             else
             { 
                 for (int i = 0; i < fitnesses.Count; i++)
-                    if (fitnesses[i] <= other.fitnesses[i]) { return false; }
+                    if (fitnesses[i] < other.fitnesses[i]) { return false; }
             }
 
             return true;

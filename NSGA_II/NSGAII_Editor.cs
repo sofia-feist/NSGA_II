@@ -1,77 +1,124 @@
-﻿using System;
+﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Special;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using Grasshopper.Kernel;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
-using Grasshopper.Kernel.Special;
 
 namespace NSGA_II
 {
     public partial class NSGAII_Editor : Form
     {
-        GH_Component gh;
-        NSGAII_Visualizer visualizer;
-        NSGAII_Algorithm nsgaII;
+        private NSGAII_Visualizer visualizer;
 
-        public static bool TimeChecked;
-        public static bool GenerationsChecked;
 
-        public List<GH_NumberSlider> geneInputs;
-        public List<IGH_Param> fitnessInputs;
+        internal static bool TimeChecked;
+        internal static bool GenerationsChecked;
+
+        internal BackgroundWorker TimerThread;
+        internal BackgroundWorker backgroundWorker;
+
 
 
         public NSGAII_Editor(GH_Component _GHComponent)
         {
             visualizer = new NSGAII_Visualizer(this, _GHComponent);
-            nsgaII = new NSGAII_Algorithm(visualizer, _GHComponent);
 
-            gh = _GHComponent;
-
-            InitializeComponent(); 
+            InitializeComponent();     // <- Windows Forms Window
+            InitializeOptimization();
 
             TimeChecked = TimeCheckBox.Checked;
             GenerationsChecked = GenerationsCheckBox.Checked;
 
 
+            // Asynchronous Run Optimization
+            backgroundWorker = new BackgroundWorker() 
+            { 
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true       // IMPLEMENT Cancellation
+            };
+            backgroundWorker.DoWork += background_RunOptimization;
+            //backgroundWorker.ProgressChanged += background_OptimizationProgress;
+            backgroundWorker.RunWorkerCompleted += background_OptimizationComplete;
+       
 
-            geneInputs = new List<GH_NumberSlider>();
 
-            foreach (IGH_Param source in gh.Params.Input[0].Sources)
-            {
-                GH_NumberSlider slider = source as GH_NumberSlider;
+            //TimerThread = new BackgroundWorker();
+            //TimerThread.DoWork += new DoWorkEventHandler(visualizer.background_Timer);
+            
 
-                if (slider != null)
-                    geneInputs.Add(slider); 
-            }
-
-            fitnessInputs = (List<IGH_Param>) gh.Params.Input[1].Sources;
         }
 
-        private void NSGAII_EditorWindow(object sender, EventArgs e)
+        
+
+
+
+
+
+        // InitializeOptimization: Initializes statistics and parameters for the optimization (When Editor Window is opened and when Reset button is pressed)
+        public void InitializeOptimization()
         {
+            NSGAII_Algorithm.currentGeneration = 0;
+            NSGAII_Algorithm.stopWatch = new Stopwatch();
 
-            //foreach (GH_NumberSlider slider in parameterSliders)
-            //{
-            //    slider.Slider.Value = (decimal)random.NextDouble() * (slider.Slider.Maximum - slider.Slider.Minimum) + slider.Slider.Minimum;
-            //}
+            visualizer.CurrentGeneration.Text = "Current Generation: " + NSGAII_Algorithm.currentGeneration;
+            visualizer.TimeElapsed.Text = "Time Elapsed: " + NSGAII_Algorithm.stopWatch.Elapsed.TotalSeconds;
+
+            for (int i = 0; i < visualizer.ParetoChart.Series.Count; i++)
+                visualizer.ParetoChart.Series[i].Points.Clear();
         }
 
+
+
+
+        #region Background worker Event Handlers
+        // background_RunOptimization: Starts Optimization
+        private void background_RunOptimization(object sender, DoWorkEventArgs e)
+        {
+            NSGAII_Algorithm.NSGAII();
+        }
+
+
+        // background_OptimizationComplete: Method Called when optimization is completed
+        private void background_OptimizationComplete(object sender, RunWorkerCompletedEventArgs e)
+        {
+            visualizer.CurrentGeneration.Text = "Current Generation: " + (NSGAII_Algorithm.currentGeneration - 1);
+            visualizer.TimeElapsed.Text = "Time Elapsed: " + TimeSpan.FromSeconds(NSGAII_Algorithm.stopWatch.Elapsed.TotalSeconds).ToString(@"hh\:mm\:ss\.fff");
+
+            visualizer.AddPointsWithLabels(NSGAII_Algorithm.archive, visualizer.ParetoChart.Series[0]);
+            visualizer.AddPointsWithLabels(NSGAII_Algorithm.paretoFront, visualizer.ParetoChart.Series[1]);
+        }
+        #endregion
+
+
+
+
+        #region Editor Window Event Handlers
+
+        ////////////////////////////////////////////////////////////////////////////
+        /////////////////////// EDITOR WINDOW EVENT HANDLERS ///////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+
+
+        // OkButton_Click: Event Method for when the OK Button is pressed
         private void OkButton_Click(object sender, EventArgs e)
         {
             Close();
         }
 
+
+        // PopSizeInputField_ValueChanged: Event Method for when the Population Size Input Field is changed
         private void PopSizeInputField_ValueChanged(object sender, EventArgs e)
         {
             NSGAII_Algorithm.PopulationSize = (int)PopSizeInputField.Value;
             visualizer.Population.Text = "Population: " + NSGAII_Algorithm.PopulationSize;
         }
 
+
+        // GenerationCheckBox_CheckedChanged: Event Method for when the Generation CheckBox is pressed
         private void GenerationCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (GenerationsCheckBox.Checked == true)
@@ -92,11 +139,15 @@ namespace NSGA_II
             }
         }
 
+
+        // NGenerationsInputField_ValueChanged: Event Method for when the N Generations Input Field is changed
         private void NGenerationsInputField_ValueChanged(object sender, EventArgs e)
         {
             NSGAII_Algorithm.MaxGenerations = (int)NGenerationsInputField.Value;
         }
 
+
+        // TimeCheckBox_CheckedChanged: Event Method for when the Time CheckBox is pressed
         private void TimeCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             if (TimeCheckBox.Checked == true)
@@ -119,28 +170,55 @@ namespace NSGA_II
             }
         }
 
+
+        // DurationHours_ValueChanged: Event Method for when the Duration (HOURS) Input Field is changed
         private void DurationHours_ValueChanged(object sender, EventArgs e)
         {
-            NSGAII_Algorithm.MaxDuration = (double) (DurationTimeHours.Value * 3600 + DurationTimeMinutes.Value * 60);
+            NSGAII_Algorithm.MaxDuration = (int)(DurationTimeHours.Value * 3600 + DurationTimeMinutes.Value * 60);
         }
 
+
+        // DurationMinutes_ValueChanged: Event Method for when the Duration (MINUTES) Input Field is changed
         private void DurationMinutes_ValueChanged(object sender, EventArgs e)
         {
-            NSGAII_Algorithm.MaxDuration = (double)(DurationTimeHours.Value * 3600 + DurationTimeMinutes.Value * 60);
+            NSGAII_Algorithm.MaxDuration = (int)(DurationTimeHours.Value * 3600 + DurationTimeMinutes.Value * 60);
         }
 
+
+        // RunOptimizationButton_Click: Event Method for when the Run Optimization Button is pressed
         private void RunOptimizationButton_Click(object sender, EventArgs e)
         {
-            if (TimeCheckBox.Checked || GenerationsCheckBox.Checked)
-                nsgaII.NSGAII();
-            else 
-                MessageBox.Show("Select a Stop condition", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (backgroundWorker.IsBusy == false)
+            {
+                if (TimeCheckBox.Checked || GenerationsCheckBox.Checked)
+                {
+                    // RunButton Appearance
+                    RunOptimizationButton.Enabled = false;
+                    RunOptimizationButton.ForeColor = SystemColors.ButtonShadow;
+                    RunOptimizationButton.FlatStyle = FlatStyle.Flat;
+
+                    // Start Optimization in the background
+                    backgroundWorker.RunWorkerAsync();
+                    //TimerThread.RunWorkerAsync();
+                }
+                    
+                else
+                    MessageBox.Show("Select a Stop condition", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            } 
         }
 
-        private void resetButton_Click(object sender, EventArgs e)
+
+        // ResetButton_Click: Event Method for when the Reset Button is pressed
+        private void ResetButton_Click(object sender, EventArgs e)
         {
-            nsgaII.InitializeOptimization();
-        }
+            // Initialize Parameters for new optimization
+            InitializeOptimization();
 
+            // RunButton Appearance
+            RunOptimizationButton.Enabled = true;
+            RunOptimizationButton.ForeColor = SystemColors.ControlText;
+            RunOptimizationButton.FlatStyle = FlatStyle.Standard;
+        }
+        #endregion
     }
 }

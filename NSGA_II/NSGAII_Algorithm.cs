@@ -1,62 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
-using Grasshopper.Kernel;
-using System.Windows.Forms.DataVisualization.Charting;
-using System.Drawing;
-using System.ComponentModel;
-using System.Windows.Forms;
+
 
 namespace NSGA_II
 {
-    public class NSGAII_Algorithm : UserControl
+    public static class NSGAII_Algorithm
     {
-        GH_Component GHComponent;
-        NSGAII_Visualizer visualizer;
-
         public static int PopulationSize = 100;
 
         public static int currentGeneration = 0;
         public static int MaxGenerations = 50;
 
         public static Stopwatch stopWatch = new Stopwatch();
-        public static double MaxDuration = 5400;   // In Seconds (1h30)
+        public static int MaxDuration = 5400;   // In Seconds (= 1h30)
 
         public static bool Minimize = true;
         
-        public static double probabilityCrossover = 0.98;
-
-        public List<Individual>  population;
-
+        public const double probabilityCrossover = 0.98;
+        public const double probabilityMutation = 0.05;
 
 
-        public NSGAII_Algorithm(NSGAII_Visualizer _visualizer, GH_Component _GHComponent)
-        {
-            visualizer = _visualizer;
-            GHComponent = _GHComponent;
-
-            InitializeOptimization();
-        }
+        // Final Population lists
+        internal static List<Individual> archive;
+        internal static List<Individual> paretoFront;
+        internal static List<Individual> currentPopulation;
 
 
-
-        // InitializeOptimization: Initializes statistics and parameters for the optimization (also works for the Reset)
-        public void InitializeOptimization()
-        {
-            currentGeneration = 0;
-            stopWatch = new Stopwatch();
-
-            visualizer.CurrentGeneration.Text = "Current Generation: " + currentGeneration;
-            visualizer.TimeElapsed.Text = "Time Elapsed: " + stopWatch.Elapsed.TotalSeconds;
-
-            for (int i = 0; i < visualizer.ParetoChart.Series.Count; i++)
-                visualizer.ParetoChart.Series[i].Points.Clear();
-        }
 
 
         // Stop Condition: Can be either a specified number of generations, a specified duration, or both (whichever comes first)
-        bool StopCondition()
+        private static bool StopCondition()
         {
             if (NSGAII_Editor.GenerationsChecked)
             {
@@ -72,7 +46,7 @@ namespace NSGA_II
 
 
 
-
+        
 
         ////////////////////////////////////////////////////////////////////////
         ////////////////////////    NSGA-II Algorithm   ////////////////////////
@@ -84,23 +58,23 @@ namespace NSGA_II
         // IEEE transactions on evolutionary computation, 6(2), pp. 182-197.
         // &
         // http://www.cleveralgorithms.com/nature-inspired/evolution/nsga.html
-        public void NSGAII() 
+        public static void NSGAII() 
         {
-            //BackgroundWorker bw = new BackgroundWorker();
-            //bw.DoWork += new DoWorkEventHandler(background_UpdateChart);
+            archive = new List<Individual>();
 
             stopWatch.Start();
 
-            Population pop = new Population(GHComponent, PopulationSize);
+            Population pop = new Population(PopulationSize);
 
             pop.FastNonDominatedSort();
-            var offspring = pop.Offspring();
 
             while (StopCondition())
             {
+                var offspring = pop.Offspring();
                 pop.population.AddRange(offspring);
                 pop.FastNonDominatedSort();
 
+                // Selection of the Next Generation using the Crowded-Comparison Operator
                 var newGeneration = new List<Individual>();
 
                 foreach (var front in pop.fronts)
@@ -121,44 +95,24 @@ namespace NSGA_II
                 }
 
                 pop.population = newGeneration;
-                offspring = pop.Offspring();
-
-                visualizer.CurrentGeneration.Text = "Current Generation: " + currentGeneration;
                 currentGeneration++;
 
+                // ARCHIVE LISTS
+                archive.AddRange(pop.population);
+                currentPopulation = pop.population;
+                paretoFront = pop.fronts[0];
 
-                //bw.RunWorkerAsync();
                 // GRAPHIC UPDATE
-                visualizer.TimeElapsed.Text = "Time Elapsed: " + TimeSpan.FromSeconds(stopWatch.Elapsed.TotalSeconds).ToString(@"hh\:mm\:ss\.fff");
+                //visualizer.CurrentGeneration.Text = "Current Generation: " + currentGeneration;
+                //visualizer.TimeElapsed.Text = "Time Elapsed: " + TimeSpan.FromSeconds(stopWatch.Elapsed.TotalSeconds).ToString(@"hh\:mm\:ss\.fff");
 
-                pop.population.ForEach(i => visualizer.ParetoChart.Series[0].Points.AddXY(i.fitnesses[0], i.fitnesses[1]));
+                //pop.population.ForEach(i => visualizer.ParetoChart.Series[0].Points.AddXY(i.fitnesses[0], i.fitnesses[1]));
 
-                visualizer.ParetoChart.Series[1].Points.Clear();
-                pop.fronts[0].ForEach(i => visualizer.ParetoChart.Series[1].Points.AddXY(i.fitnesses[0], i.fitnesses[1]));
+                //visualizer.ParetoChart.Series[1].Points.Clear();
+                //pop.fronts[0].ForEach(i => visualizer.ParetoChart.Series[1].Points.AddXY(i.fitnesses[0], i.fitnesses[1]));
             }
 
-            population = pop.population;
-
             stopWatch.Stop();
-            visualizer.TimeElapsed.Text = "Time Elapsed: " + TimeSpan.FromSeconds(stopWatch.Elapsed.TotalSeconds).ToString(@"hh\:mm\:ss\.fff");
-        }
-
-
-
-
-
-        // ???????????????
-        private void background_UpdateChart(object sender, DoWorkEventArgs e)
-        {
-            //BackgroundWorker worker = sender as BackgroundWorker;
-
-            //visualizer.TimeElapsed.Text = "Time Elapsed: " + TimeSpan.FromSeconds(stopWatch.Elapsed.TotalSeconds).ToString(@"hh\:mm\:ss\.fff");
-
-            //pop.population.ForEach(i => visualizer.ParetoChart.Series[0].Points.AddXY(i.fitnesses[0], i.fitnesses[1]));
-
-            //visualizer.ParetoChart.Series[1].Points.Clear();
-            //pop.fronts[0].ForEach(i => visualizer.ParetoChart.Series[1].Points.AddXY(i.fitnesses[0], i.fitnesses[1]));
-    
         }
 
     }

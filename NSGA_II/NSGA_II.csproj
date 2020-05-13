@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GH_ParameterHandler.cs" />
     <Compile Include="NSGAII_Visualizer.cs" />
     <Compile Include="NSGAII_Editor.cs">
       <SubType>Form</SubType>
@@ -68,7 +69,6 @@
     <Compile Include="NSGAII_Algorithm.cs" />
     <Compile Include="Population.cs" />
     <Compile Include="Individual.cs" />
-    <Compile Include="Genotype.cs" />
     <Compile Include="NSGAII_GHComponent.cs" />
     <Compile Include="NSGA_II_Info.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

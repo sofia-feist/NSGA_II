@@ -6,9 +6,9 @@ using System.Linq;
 
 namespace NSGA_II
 {
-    public class Population
+    internal class Population
     {
-        GH_Component GHComponent;
+
         static Random random = new Random();
 
         int populationSize;
@@ -18,9 +18,8 @@ namespace NSGA_II
 
 
 
-        public Population(GH_Component _GHComponent, int size)
+        public Population(int size)
         {
-            GHComponent = _GHComponent;
             populationSize = size;
 
             nonDominatedFront = new List<Individual>();
@@ -49,6 +48,7 @@ namespace NSGA_II
                 a = SelectParent();
                 b = SelectParent();
                 c = Breed(a, b);
+                c.fitnesses.Clear();    // DELETE LATER
                 c.Evaluate();
 
                 offspring.Add(c);
@@ -60,30 +60,32 @@ namespace NSGA_II
 
         private Individual SelectParent()
         {
-            int chosen = (int)Math.Floor(((double)populationSize - 1e-3) * Math.Pow((random.NextDouble()), 2));
-            return population[0];//chosen];
+            int chosen = (int)Math.Floor(((double)population.Count - 1e-3) * Math.Pow((random.NextDouble()), 2));
+            return population[chosen];
         }
 
         private Individual Breed(Individual a, Individual b)
         {
-            Individual c = new Individual { genotype = Crossover(a.genotype, b.genotype) };
-            c.genotype.Mutate();
-            return c;
+            Individual child = Crossover(a, b);
+            child.Mutate();
+            return child;
         }
 
 
-        private Genotype Crossover(Genotype a, Genotype b)
+        private Individual Crossover(Individual a, Individual b)
         {
             if (random.NextDouble() > NSGAII_Algorithm.probabilityCrossover)
                 return random.NextDouble() < 0.5 ? a : b;
 
-            Genotype c = new Genotype();
-            string newGene = "";
+            Individual c = new Individual();
+            for (int i = 0; i < c.genes.Count; i++)
+            {
+                if (random.NextDouble() < 0.5)
+                    c.genes[i] = a.genes[i];
+                else
+                    c.genes[i] = b.genes[i];
+            }
 
-            for (int i = 0; i < c.gene.Length; i++)
-                newGene += random.NextDouble() < 0.5 ? a.gene[i] : b.gene[i];
-
-            c.gene = newGene;
             return c;
         }
 
@@ -122,7 +124,7 @@ namespace NSGA_II
             fronts.Add(nonDominatedFront);
             int currentFront = 0;
 
-            while (currentFront < fronts.Count)
+            while (population.Any(p => p.dominationCount > 0))    //currentFront < fronts.Count)
             {
                 List<Individual> nextFront = new List<Individual>();
 
@@ -131,6 +133,7 @@ namespace NSGA_II
                     foreach (var q in p.dominated)
                     {
                         q.dominationCount--;
+
                         if (q.dominationCount == 0)
                         {
                             q.rank = currentFront + 1;
@@ -142,6 +145,8 @@ namespace NSGA_II
                 currentFront++;
                 if (nextFront.Count != 0)
                     fronts.Add(nextFront);
+
+                if (currentFront == fronts.Count) currentFront = 0;  //Restart
             }
 
             //if (fronts.SelectMany(i => i).Count() < populationSize)
@@ -167,7 +172,7 @@ namespace NSGA_II
 
                 for (int i = 1; i < size - 1; i++)
                 {
-                    double max = front.Max(p => p.fitnesses[m]);
+                    double max = front.Max(p => p.fitnesses[m]);     
                     double min = front.Min(p => p.fitnesses[m]);
                     front[i].crowdingDistance += (front[i + 1].fitnesses[m] - front[i - 1].fitnesses[m]) / (max - min);
                 }

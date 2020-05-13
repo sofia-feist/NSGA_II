@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Timers;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization;
@@ -15,9 +16,9 @@ namespace NSGA_II
 {
     public class NSGAII_Visualizer
     {
-        NSGAII_Editor Editor;
+        private NSGAII_Editor Editor;
+        private GH_Component gh;
 
-        GH_Component GHComponent;
 
         public Chart ParetoChart;
 
@@ -27,18 +28,19 @@ namespace NSGA_II
         public Label nGenes;
         public Label nObjectives;
 
-        TextBox solutionInfo;
-        
+        public TextBox solutionInfo;
 
-        public NSGAII_Visualizer(NSGAII_Editor editor, GH_Component _GHComponent)
+
+
+        public NSGAII_Visualizer(NSGAII_Editor editor, GH_Component _ghComponent)
         {
             Editor = editor;
-            GHComponent = _GHComponent;
+            gh = _ghComponent;
 
             InitializeParetoChart();
             InitializeStatistics();
             InitializeTexbox();
-            
+
         }
 
 
@@ -60,12 +62,10 @@ namespace NSGA_II
                 Name = "ChartArea",
                 BackColor = Color.White
             };
-            ParetoChart.ChartAreas.Add(chartArea);
-            //ParetoChart.ChartAreas["ChartArea"].AxisX.Minimum = 0;     // UPDATE WITH SLIDER INFO
-            //ParetoChart.ChartAreas["ChartArea"].AxisX.Interval = 4;
+            ParetoChart.ChartAreas.Add(chartArea);                                  // UPDATE AXES WITH SLIDER INFO
+            ParetoChart.ChartAreas["ChartArea"].AxisX.RoundAxisValues();
             ParetoChart.ChartAreas["ChartArea"].AxisX.ScaleView.Zoomable = true;
-            //ParetoChart.ChartAreas["ChartArea"].AxisY.Minimum = 0;
-            //ParetoChart.ChartAreas["ChartArea"].AxisY.Interval = 4;
+            ParetoChart.ChartAreas["ChartArea"].AxisY.RoundAxisValues();
             ParetoChart.ChartAreas["ChartArea"].AxisY.ScaleView.Zoomable = true;
              
             // LEGEND
@@ -104,13 +104,15 @@ namespace NSGA_II
 
             if (result.ChartElementType == ChartElementType.DataPoint)
             {
-                //string xLabel = 
-                double xCoord = Math.Round(result.Series.Points[result.PointIndex].XValue, 3);
-                double yCoord = Math.Round(result.Series.Points[result.PointIndex].YValues[0], 3);
+                DataPoint point = result.Series.Points[result.PointIndex];
 
                 solutionInfo.Visible = true;
                 solutionInfo.Location = new Point(ParetoChart.Location.X + e.X, ParetoChart.Location.Y + e.Y);
-                solutionInfo.Text = $"x: {xCoord}\r\ny: {yCoord}";
+                solutionInfo.Text = point.Label;
+
+                Size size = TextRenderer.MeasureText(solutionInfo.Text, solutionInfo.Font);
+                solutionInfo.Size = size;
+
                 solutionInfo.BringToFront();
             }
             else
@@ -151,41 +153,17 @@ namespace NSGA_II
         {
             solutionInfo = new TextBox
             {
-                AutoSize = true,
+                Enabled = false,
                 Multiline = true,
-                Size = new Size(100, 50),
-                Cursor = Cursors.Arrow,
                 ForeColor = Color.Black,
                 BackColor = Color.FromArgb(250,250,250),
-                TextAlign = HorizontalAlignment.Center,
+                TextAlign = HorizontalAlignment.Left,
                 BorderStyle = BorderStyle.None,
-                Enabled = false,
                 Visible = false
             };
 
             Editor.Controls.Add(solutionInfo);
         }
-        //RectangleAnnotation solutionInfo = new RectangleAnnotation();
-        ////solutionInfo.Visible = false;
-        //solutionInfo.AllowAnchorMoving = true;
-        //solutionInfo.ForeColor = Color.Black;
-        //solutionInfo.X = double.NaN;
-        //solutionInfo.Y = double.NaN;
-        //solutionInfo.AnchorX = double.NaN;
-        //solutionInfo.AnchorY = double.NaN;
-        ////solutionInfo.Font = new Font("Source Sans Pro", 9); ;
-        //solutionInfo.LineWidth = 0;
-        //solutionInfo.Text = "x: 0000";
-        //solutionInfo.BackColor = Color.FromArgb(30,220,220,220);
-        //solutionInfo.Width = 30;
-        //solutionInfo.Height = 15;
-        //solutionInfo.BringToFront();
-
-        //ParetoChart.Annotations.Add(solutionInfo);
-
-        //solutionInfo.SetAnchor(result.Series.Points[result.PointIndex]);
-        //solutionInfo.AnchorDataPoint = result.Series.Points[result.PointIndex];
-
 
 
 
@@ -194,6 +172,7 @@ namespace NSGA_II
         {
             Population = new Label
             {
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 530),
                 Size = new Size(200, 20),
@@ -204,6 +183,7 @@ namespace NSGA_II
 
             CurrentGeneration = new Label
             {
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 560),
                 Size = new Size(200, 20),
@@ -214,6 +194,7 @@ namespace NSGA_II
 
             TimeElapsed = new Label
             {
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 590),
                 Size = new Size(200, 20),
@@ -224,23 +205,52 @@ namespace NSGA_II
 
             nGenes = new Label
             {
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 620),
                 Size = new Size(100, 20),
-                Text = "No of Genes: " + GHComponent.Params.Input[0].Sources.Count
+                Text = "No of Genes: " + gh.Params.Input[0].Sources.Count
             };
             Editor.Controls.Add(nGenes);
 
 
             nObjectives = new Label
             {
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 650), //440
                 Size = new Size(125, 20),
-                Text = "No of Objectives: " + GHComponent.Params.Input[1].Sources.Count
+                Text = "No of Objectives: " + gh.Params.Input[1].Sources.Count
             };
             Editor.Controls.Add(nObjectives);
         }
+
+        internal void AddPointsWithLabels(List<Individual> solutions, Series series)
+        {
+            foreach (Individual individual in solutions)
+            {
+                string geneLabel = "";
+                string fitnessLabel = "";
+
+                for (int i = 0; i < individual.genes.Count; i++)
+                    geneLabel += $"Gene {i + 1}: { Math.Round(individual.genes[i], 3) }\r\n";         // NAME GENES/OBJECTIVES??
+
+                for (int i = 0; i < individual.fitnesses.Count; i++)
+                {
+                    if (i != individual.fitnesses.Count - 1)
+                        fitnessLabel += $"Fitness {i + 1}: {Math.Round(individual.fitnesses[i], 3)}\r\n";
+                    else
+                        fitnessLabel += $"Fitness {i + 1}: {Math.Round(individual.fitnesses[i], 3)}";  // Last one doesn't have a Newline at the end
+                }
+
+                DataPoint pt = new DataPoint(individual.fitnesses[0], individual.fitnesses[1]);      // MORE DIMENTIONS?
+                pt.Label = geneLabel + fitnessLabel;
+                series.Points.Add(pt);
+            }
+        }
+
+        public void UpdateStatistics()    // DO THIS IN THIS CLASS?
+        { }
 
     }
 }

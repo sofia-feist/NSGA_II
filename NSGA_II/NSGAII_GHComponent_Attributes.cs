@@ -11,10 +11,10 @@ namespace NSGA_II
         public NSGAII_GHComponent_Attributes(IGH_Component NSGAII_GHComponent) : base(NSGAII_GHComponent) { }
 
 
-        // Overrides GHComponent attributes to allow mouse double click response: displays the NSGA-II Editor Form with double click
+        // Overrides the GHComponent attributes to allow mouse double click response: displays the NSGA-II Editor Form with double click
         public override GH_ObjectResponse RespondToMouseDoubleClick(GH_Canvas sender, GH_CanvasMouseEvent e)
         {
-            ((NSGAII_GHComponent)Owner).DisplayForm();
+            ((NSGAII_GHComponent)Owner).DisplayEditor();
             return GH_ObjectResponse.Handled;
         }
     }

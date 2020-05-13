@@ -274,7 +274,7 @@ namespace NSGA_II
             this.resetButton.TabIndex = 12;
             this.resetButton.Text = "Reset";
             this.resetButton.UseVisualStyleBackColor = true;
-            this.resetButton.Click += new System.EventHandler(this.resetButton_Click);
+            this.resetButton.Click += new System.EventHandler(this.ResetButton_Click);
             // 
             // NSGAII_Editor
             // 
@@ -291,7 +291,6 @@ namespace NSGA_II
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "NSGAII_Editor";
             this.Text = "NSGA-II Editor";
-            this.Load += new System.EventHandler(this.NSGAII_EditorWindow);
             ((System.ComponentModel.ISupportInitialize)(this.PopSizeInputField)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.NGenerationsInputField)).EndInit();
             this.StopConditionG.ResumeLayout(false);

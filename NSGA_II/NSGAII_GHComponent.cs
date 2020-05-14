@@ -11,8 +11,7 @@ namespace NSGA_II
 {
     public class NSGAII_GHComponent : GH_Component
     {
-        internal NSGAII_Editor editor;
-        internal GH_ParameterHandler GhHandler;
+        private NSGAII_Editor editor;
 
 
         //// Constructor
@@ -21,10 +20,10 @@ namespace NSGA_II
               "Multi-Objective search and optimization using the NSGA-II algorithm",
               "NSGA-II", "Optimization")
         {
-            GhHandler = new GH_ParameterHandler(this);
+            GH_ParameterHandler GhHandler = new GH_ParameterHandler(this);
         }
 
-        
+
 
 
         // Registers all the input parameters for this component.
@@ -81,7 +80,7 @@ namespace NSGA_II
         // CreateAttributes: Creates specific attributes for the component (in this case, overrides the double click properties)
         public override void CreateAttributes()
         {
-            m_attributes = new NSGAII_GHComponent_Attributes(this);
+            m_attributes = new GH_Component_Attributes(this);
         }
 
 
@@ -89,7 +88,7 @@ namespace NSGA_II
         public void DisplayEditor()
         {
             if (editor == null || editor.IsDisposed)
-                editor = new NSGAII_Editor(this);
+                editor = new NSGAII_Editor();
                             
             GH_WindowsFormUtil.CenterFormOnCursor(editor, true);
             editor.Show();

@@ -44,7 +44,7 @@ namespace NSGA_II
             this.DurationTimeHours = new System.Windows.Forms.NumericUpDown();
             this.DurationTimeMinutes = new System.Windows.Forms.NumericUpDown();
             this.RunOptimizationButton = new System.Windows.Forms.Button();
-            this.resetButton = new System.Windows.Forms.Button();
+            this.stopResetButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.PopSizeInputField)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NGenerationsInputField)).BeginInit();
             this.StopConditionG.SuspendLayout();
@@ -92,7 +92,7 @@ namespace NSGA_II
             // 
             this.OkButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.OkButton.Font = new System.Drawing.Font("Source Sans Pro", 10F);
-            this.OkButton.Location = new System.Drawing.Point(1160, 635);
+            this.OkButton.Location = new System.Drawing.Point(1154, 635);
             this.OkButton.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.OkButton.Name = "OkButton";
             this.OkButton.Size = new System.Drawing.Size(132, 35);
@@ -260,7 +260,7 @@ namespace NSGA_II
             // 
             this.RunOptimizationButton.Location = new System.Drawing.Point(15, 286);
             this.RunOptimizationButton.Name = "RunOptimizationButton";
-            this.RunOptimizationButton.Size = new System.Drawing.Size(159, 33);
+            this.RunOptimizationButton.Size = new System.Drawing.Size(170, 33);
             this.RunOptimizationButton.TabIndex = 11;
             this.RunOptimizationButton.Text = "Run Optimization";
             this.RunOptimizationButton.UseVisualStyleBackColor = true;
@@ -268,20 +268,20 @@ namespace NSGA_II
             // 
             // resetButton
             // 
-            this.resetButton.Location = new System.Drawing.Point(210, 286);
-            this.resetButton.Name = "resetButton";
-            this.resetButton.Size = new System.Drawing.Size(80, 33);
-            this.resetButton.TabIndex = 12;
-            this.resetButton.Text = "Reset";
-            this.resetButton.UseVisualStyleBackColor = true;
-            this.resetButton.Click += new System.EventHandler(this.ResetButton_Click);
+            this.stopResetButton.Location = new System.Drawing.Point(200, 286);
+            this.stopResetButton.Name = "resetButton";
+            this.stopResetButton.Size = new System.Drawing.Size(90, 33);
+            this.stopResetButton.TabIndex = 12;
+            this.stopResetButton.Text = "Stop";
+            this.stopResetButton.UseVisualStyleBackColor = true;
+            this.stopResetButton.Click += new System.EventHandler(this.StopResetButton_Click);
             // 
             // NSGAII_Editor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1318, 693);
-            this.Controls.Add(this.resetButton);
+            this.ClientSize = new System.Drawing.Size(1312, 693);
+            this.Controls.Add(this.stopResetButton);
             this.Controls.Add(this.RunOptimizationButton);
             this.Controls.Add(this.StopConditionG);
             this.Controls.Add(this.PopulationSizeLabel);
@@ -289,6 +289,7 @@ namespace NSGA_II
             this.Controls.Add(this.OkButton);
             this.Font = new System.Drawing.Font("Source Sans Pro", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.MinimumSize = new System.Drawing.Size(325, 600);
             this.Name = "NSGAII_Editor";
             this.Text = "NSGA-II Editor";
             ((System.ComponentModel.ISupportInitialize)(this.PopSizeInputField)).EndInit();
@@ -317,7 +318,7 @@ namespace NSGA_II
         private Label DurationLabel;
         private Button RunOptimizationButton;
         private Label H_MinsLabel;
-        private Button resetButton;
+        private Button stopResetButton;
     }
 }
 

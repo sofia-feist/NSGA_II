@@ -65,12 +65,12 @@
     <Compile Include="NSGAII_Editor.Designer.cs">
       <DependentUpon>NSGAII_Editor.cs</DependentUpon>
     </Compile>
-    <Compile Include="NSGAII_GHComponent_Attributes.cs" />
+    <Compile Include="GH_Component_Attributes.cs" />
     <Compile Include="NSGAII_Algorithm.cs" />
     <Compile Include="Population.cs" />
     <Compile Include="Individual.cs" />
     <Compile Include="NSGAII_GHComponent.cs" />
-    <Compile Include="NSGA_II_Info.cs" />
+    <Compile Include="NSGA_II_Library.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

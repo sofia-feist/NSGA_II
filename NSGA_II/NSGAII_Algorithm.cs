@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using System.ComponentModel;
 
 
 namespace NSGA_II
@@ -17,13 +18,14 @@ namespace NSGA_II
 
         public static bool Minimize = true;
         
-        public const double probabilityCrossover = 0.98;
+        public const double probabilityCrossover = 0.95;
         public const double probabilityMutation = 0.05;
 
 
         // Final Population lists
         internal static List<Individual> archive;
-        internal static List<Individual> paretoFront;
+        internal static List<Individual> lastParetoFront;
+        internal static List<Individual> paretoFrontHistory;
         internal static List<Individual> currentPopulation;
 
 
@@ -36,7 +38,7 @@ namespace NSGA_II
             {
                 if (currentGeneration > MaxGenerations) return false;
             }
-            if (NSGAII_Editor.TimeChecked)
+            else if (NSGAII_Editor.TimeChecked)
             {
                 if (stopWatch.Elapsed.TotalSeconds > MaxDuration) return false;
             } 
@@ -58,10 +60,18 @@ namespace NSGA_II
         // IEEE transactions on evolutionary computation, 6(2), pp. 182-197.
         // &
         // http://www.cleveralgorithms.com/nature-inspired/evolution/nsga.html
-        public static void NSGAII() 
+        public static void NSGAII(object sender, DoWorkEventArgs e)
         {
+            // Initialize Archive Lists
             archive = new List<Individual>();
+            paretoFrontHistory = new List<Individual>();
 
+            // Set up inputs
+            GH_ParameterHandler.SetGeneInputs();
+            GH_ParameterHandler.SetFitnessInputs();    
+
+
+            // START OPTIMIZATION
             stopWatch.Start();
 
             Population pop = new Population(PopulationSize);
@@ -97,19 +107,21 @@ namespace NSGA_II
                 pop.population = newGeneration;
                 currentGeneration++;
 
-                // ARCHIVE LISTS
+
+                // UPDATE BACKGROUNDWORKER THREAD
+                // Check for cancellation
+                if (NSGAII_Editor.backgroundWorker.CancellationPending)
+                    break;
+
+                // Report Progress
+                NSGAII_Editor.backgroundWorker.ReportProgress(50);
+
+
+                // UPDATE ARCHIVE LISTS
                 archive.AddRange(pop.population);
+                lastParetoFront = pop.fronts[0];
                 currentPopulation = pop.population;
-                paretoFront = pop.fronts[0];
-
-                // GRAPHIC UPDATE
-                //visualizer.CurrentGeneration.Text = "Current Generation: " + currentGeneration;
-                //visualizer.TimeElapsed.Text = "Time Elapsed: " + TimeSpan.FromSeconds(stopWatch.Elapsed.TotalSeconds).ToString(@"hh\:mm\:ss\.fff");
-
-                //pop.population.ForEach(i => visualizer.ParetoChart.Series[0].Points.AddXY(i.fitnesses[0], i.fitnesses[1]));
-
-                //visualizer.ParetoChart.Series[1].Points.Clear();
-                //pop.fronts[0].ForEach(i => visualizer.ParetoChart.Series[1].Points.AddXY(i.fitnesses[0], i.fitnesses[1]));
+                paretoFrontHistory.AddRange(pop.fronts[0]);
             }
 
             stopWatch.Stop();

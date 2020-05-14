@@ -117,14 +117,14 @@ namespace NSGA_II
                 if (p.dominationCount == 0)
                 {
                     p.rank = 0;
-                    nonDominatedFront.Add(p);
+                    nonDominatedFront.Add(p); 
                 }
             }
 
             fronts.Add(nonDominatedFront);
             int currentFront = 0;
 
-            while (population.Any(p => p.dominationCount > 0))    //currentFront < fronts.Count)
+            while (currentFront < fronts.Count) 
             {
                 List<Individual> nextFront = new List<Individual>();
 
@@ -137,7 +137,7 @@ namespace NSGA_II
                         if (q.dominationCount == 0)
                         {
                             q.rank = currentFront + 1;
-                            nextFront.Add(q);
+                            nextFront.Add(q);     
                         }
                     }
                 }
@@ -145,12 +145,7 @@ namespace NSGA_II
                 currentFront++;
                 if (nextFront.Count != 0)
                     fronts.Add(nextFront);
-
-                if (currentFront == fronts.Count) currentFront = 0;  //Restart
             }
-
-            //if (fronts.SelectMany(i => i).Count() < populationSize)
-            //    throw new InvalidOperationException("Population bug; FIX THIS.");
 
             population = fronts.SelectMany(i => i).ToList();
         }

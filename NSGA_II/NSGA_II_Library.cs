@@ -4,7 +4,7 @@ using Grasshopper.Kernel;
 
 namespace NSGA_II
 {
-    public class NSGA_II_Info : GH_AssemblyInfo
+    public class NSGA_II_Library : GH_AssemblyInfo
     {
         public override string Name
         {

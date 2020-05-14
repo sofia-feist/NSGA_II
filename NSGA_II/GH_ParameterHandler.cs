@@ -8,11 +8,17 @@ using Grasshopper.Kernel.Special;
 
 namespace NSGA_II
 {
+    public enum GrasshopperState
+    {
+        
+    }
+
+
     public class GH_ParameterHandler
     {
         internal static GH_Component gh;
-        internal static List<GH_NumberSlider> geneInputSliders;
 
+        internal static List<GH_NumberSlider> geneInputSliders;
         internal static List<IGH_Param> fitnessInputs;
 
         private static Random random = new Random();
@@ -21,19 +27,13 @@ namespace NSGA_II
         public GH_ParameterHandler(GH_Component _GHComponent)
         {
             gh = _GHComponent;
-
-            SetGeneInputs();
-            SetFitnessInputs();
         }
 
 
         // Initializes list of input sliders
-        private void SetGeneInputs()
+        internal static void SetGeneInputs()
         {
             geneInputSliders = new List<GH_NumberSlider>();
-
-            //if (gh.Params.Input[0].Sources.Count < 1)
-            //    MessageBox.Show("", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             foreach (IGH_Param source in gh.Params.Input[0].Sources)
             {
@@ -46,35 +46,40 @@ namespace NSGA_II
 
 
         // Initializes list of fitness inputs
-        private void SetFitnessInputs()
+        internal static void SetFitnessInputs()
         {
             fitnessInputs = (List<IGH_Param>)gh.Params.Input[1].Sources;     //  ??????????????
         }
 
 
-        //NSGAII_Editor.gh.OnPingDocument().ScheduleSolution(5, ChangeGenes);
-        public List<double> ChangeSliderValues()
+        // 
+        public static List<double> GetGeneValues()
         {
+            SetSliderValues(gh.OnPingDocument()); //gh.OnPingDocument().ScheduleSolution(5, SetSliderValues);
+
             var genes = new List<double>();
 
             foreach (var slider in geneInputSliders)
+                genes.Add((double)slider.Slider.Value);
+
+            return genes;
+        }
+
+        public static void SetSliderValues(GH_Document doc)
+        {
+            foreach (var slider in geneInputSliders)
             {
                 slider.Slider.RaiseEvents = false;
-                slider.TickValue = random.Next(slider.TickCount + 1);    // +1 (include Max value)
-                genes.Add((double)slider.Slider.Value);
+                slider.TickValue = random.Next(slider.TickCount + 1);    // +1 (include Max value)  // SEPARATE SET FFROM GET?
                 slider.ExpireSolution(false);
                 slider.Slider.RaiseEvents = true;
             }
-
             while (gh.OnPingDocument().SolutionState != GH_ProcessStep.PreProcess || gh.OnPingDocument().SolutionDepth != 0) { }
 
             gh.OnPingDocument().NewSolution(true);
 
             while (gh.OnPingDocument().SolutionState != GH_ProcessStep.PostProcess || gh.OnPingDocument().SolutionDepth != 0) { }
-
-            return genes;
         }
-
 
         public List<double> GetFitnessValues()
         {

@@ -8,7 +8,7 @@ namespace NSGA_II
     internal class Individual
     {
         private static Random random = new Random();
-        //private GH_Component GHComponent = NSGAII_Editor.gh;
+        private static GH_Component GHComponent;
 
         public List<double> genes;
         public List<double> fitnesses;
@@ -22,7 +22,9 @@ namespace NSGA_II
 
         public Individual()
         {
-            genes = new List<double>();
+            GHComponent = GH_ParameterHandler.gh;
+
+            genes = new List<double>(); //GH_ParameterHandler.GetGeneValues(); //new List<double>();
 
             for (int i = 0; i < 2; i++)
             {

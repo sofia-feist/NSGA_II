@@ -28,23 +28,28 @@ namespace NSGA_II
         public Label nGenes;
         public Label nObjectives;
 
-        public TextBox solutionInfo;
+        private TextBox solutionInfo;
 
 
 
-        public NSGAII_Visualizer(NSGAII_Editor editor, GH_Component _ghComponent)
+        public NSGAII_Visualizer(NSGAII_Editor editor)
         {
             Editor = editor;
-            gh = _ghComponent;
+            gh = GH_ParameterHandler.gh;
 
             InitializeParetoChart();
             InitializeStatistics();
             InitializeTexbox();
-
         }
 
 
 
+
+        ////////////////////////////////////////////////////////////////////////////
+        /////////////////////////////// PARETO CHART ///////////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+
+        // InitializeParetoChart: Initializes the Pareto Chart
         public void InitializeParetoChart()
         {
             // CHART
@@ -54,6 +59,7 @@ namespace NSGA_II
                 Location = new Point(313, 31),
                 Margin = new Padding(3, 4, 3, 4),
                 Size = new Size(773, 639),
+                Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom
             };
 
             // CHART AREA
@@ -62,7 +68,7 @@ namespace NSGA_II
                 Name = "ChartArea",
                 BackColor = Color.White
             };
-            ParetoChart.ChartAreas.Add(chartArea);                                  // UPDATE AXES WITH SLIDER INFO
+            ParetoChart.ChartAreas.Add(chartArea);                                  // UPDATE AXES WITH SLIDER INFO?
             ParetoChart.ChartAreas["ChartArea"].AxisX.RoundAxisValues();
             ParetoChart.ChartAreas["ChartArea"].AxisX.ScaleView.Zoomable = true;
             ParetoChart.ChartAreas["ChartArea"].AxisY.RoundAxisValues();
@@ -98,6 +104,8 @@ namespace NSGA_II
             Editor.Controls.Add(ParetoChart);
         }
 
+
+        // Chart_MouseMove: Event handler for the mouse mouvement over the Pareto chart -> if the mouse moves over a chart data point, the respective solution info textbox will be displayed
         private void Chart_MouseMove(object sender, MouseEventArgs e)
         {
             HitTestResult result = ParetoChart.HitTest(e.X, e.Y);
@@ -121,6 +129,8 @@ namespace NSGA_II
             }
         }
 
+
+        // Chart_MouseWheel: Event handler for a zoom functionality with the mouse screenwheel
         private void Chart_MouseWheel(object sender, MouseEventArgs e)
         {
             var xAxis = ParetoChart.ChartAreas[0].AxisX;
@@ -149,6 +159,39 @@ namespace NSGA_II
         }
 
 
+        // AddPointsWithLabels: Adds data points to a given series using labels to store solutions' information (genes/fitness)
+        // x and y values of the datapoints correspoint to the first two fitness values of the solutions
+        // 3D+ DIMENTIONS NOT IMPLEMENTED YET
+        internal void AddPointsWithLabels(List<Individual> solutions, Series series)
+        {
+            foreach (Individual individual in solutions)
+            {
+                string geneLabel = "";
+                string fitnessLabel = "";
+
+                for (int i = 0; i < individual.genes.Count; i++)                                    // ROUND NEEDED?
+                    geneLabel += $"Gene {i + 1}: { Math.Round(individual.genes[i], 3) }\r\n";         // NAME GENES/OBJECTIVES??
+
+                for (int i = 0; i < individual.fitnesses.Count; i++)
+                {
+                    if (i != individual.fitnesses.Count - 1)
+                        fitnessLabel += $"Fitness {i + 1}: {Math.Round(individual.fitnesses[i], 3)}\r\n";
+                    else
+                        fitnessLabel += $"Fitness {i + 1}: {Math.Round(individual.fitnesses[i], 3)}";  // Last one doesn't have a Newline at the end
+                }
+
+                DataPoint pt = new DataPoint(individual.fitnesses[0], individual.fitnesses[1]);      // MORE DIMENTIONS?
+                pt.Label = geneLabel + fitnessLabel;
+                series.Points.Add(pt);
+            }
+        }
+
+
+        ////////////////////////////////////////////////////////////////////////////
+        /////////////////////////// SOLUTION INFO TEXTBOX //////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+
+        // InitializeTexbox: Initializes the textbox containing the solutions' information
         private void InitializeTexbox()
         {
             solutionInfo = new TextBox
@@ -167,12 +210,16 @@ namespace NSGA_II
 
 
 
-        // InitializeStatistics: Initialiazes the optimization statistics labels
-        public void InitializeStatistics()
+        ////////////////////////////////////////////////////////////////////////////
+        ///////////////////////// OPTIMIZATION STATISTICS //////////////////////////
+        ////////////////////////////////////////////////////////////////////////////
+
+        // InitializeStatistics: Initializes the optimization statistics labels
+        private void InitializeStatistics()
         {
             Population = new Label
             {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 530),
                 Size = new Size(200, 20),
@@ -183,7 +230,7 @@ namespace NSGA_II
 
             CurrentGeneration = new Label
             {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 560),
                 Size = new Size(200, 20),
@@ -194,7 +241,7 @@ namespace NSGA_II
 
             TimeElapsed = new Label
             {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 590),
                 Size = new Size(200, 20),
@@ -205,7 +252,7 @@ namespace NSGA_II
 
             nGenes = new Label
             {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 620),
                 Size = new Size(100, 20),
@@ -216,7 +263,7 @@ namespace NSGA_II
 
             nObjectives = new Label
             {
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Right,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 ForeColor = Color.Gray,
                 Location = new Point(14, 650), //440
                 Size = new Size(125, 20),
@@ -225,31 +272,7 @@ namespace NSGA_II
             Editor.Controls.Add(nObjectives);
         }
 
-        internal void AddPointsWithLabels(List<Individual> solutions, Series series)
-        {
-            foreach (Individual individual in solutions)
-            {
-                string geneLabel = "";
-                string fitnessLabel = "";
-
-                for (int i = 0; i < individual.genes.Count; i++)
-                    geneLabel += $"Gene {i + 1}: { Math.Round(individual.genes[i], 3) }\r\n";         // NAME GENES/OBJECTIVES??
-
-                for (int i = 0; i < individual.fitnesses.Count; i++)
-                {
-                    if (i != individual.fitnesses.Count - 1)
-                        fitnessLabel += $"Fitness {i + 1}: {Math.Round(individual.fitnesses[i], 3)}\r\n";
-                    else
-                        fitnessLabel += $"Fitness {i + 1}: {Math.Round(individual.fitnesses[i], 3)}";  // Last one doesn't have a Newline at the end
-                }
-
-                DataPoint pt = new DataPoint(individual.fitnesses[0], individual.fitnesses[1]);      // MORE DIMENTIONS?
-                pt.Label = geneLabel + fitnessLabel;
-                series.Points.Add(pt);
-            }
-        }
-
-        public void UpdateStatistics()    // DO THIS IN THIS CLASS?
+        public void UpdateStatistics()    // DO THIS HERE?
         { }
 
     }

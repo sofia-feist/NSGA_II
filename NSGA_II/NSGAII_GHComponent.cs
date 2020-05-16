@@ -19,9 +19,7 @@ namespace NSGA_II
           : base("NSGA-II Optimization", "NSGA-II",
               "Multi-Objective search and optimization using the NSGA-II algorithm",
               "NSGA-II", "Optimization")
-        {
-            GH_ParameterHandler GhHandler = new GH_ParameterHandler(this);
-        }
+        { }
 
 
 
@@ -32,20 +30,18 @@ namespace NSGA_II
             pManager.AddNumberParameter("Genes", "G", 
                 "Genes are the parameters that define the solution to optimize. Represented by one or more number sliders.", GH_ParamAccess.list);   // OR GENEPOOLS?
             pManager.AddNumberParameter("Objectives", "O", 
-                "Objectives to optimize: these represent the fitnesses produced by the changing variables. Should be two or more Number values.", GH_ParamAccess.list); 
+                "Objectives to optimize: these represent the fitnesses produced by the changing variables. Should be two or more Number values.", GH_ParamAccess.list);
         }
 
 
         // Registers all the output parameters for this component.
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
-        { } //pManager.AddNumberParameter("Output", "O", "Output Result", GH_ParamAccess.list); }
+        { } 
 
 
         // Solves the Component Solution
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
-        {
+        {          
             //var fitnesses = new List<double>();
 
             //foreach (IGH_Param source in Params.Input[0].Sources)
@@ -88,7 +84,7 @@ namespace NSGA_II
         public void DisplayEditor()
         {
             if (editor == null || editor.IsDisposed)
-                editor = new NSGAII_Editor();
+                editor = new NSGAII_Editor(this);
                             
             GH_WindowsFormUtil.CenterFormOnCursor(editor, true);
             editor.Show();

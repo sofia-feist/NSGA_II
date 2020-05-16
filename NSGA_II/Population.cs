@@ -8,19 +8,20 @@ namespace NSGA_II
 {
     internal class Population
     {
-
+        private static GH_ParameterHandler ghHandler;
         static Random random = new Random();
 
-        int populationSize;
+        private int populationSize;
         public List<Individual> population;
         public List<List<Individual>> fronts;
         public List<Individual> nonDominatedFront = new List<Individual>();
 
 
 
-        public Population(int size)
+        public Population(int size, GH_ParameterHandler _ghHandler)
         {
             populationSize = size;
+            ghHandler = _ghHandler;
 
             nonDominatedFront = new List<Individual>();
             fronts = new List<List<Individual>>();
@@ -29,68 +30,74 @@ namespace NSGA_II
 
             for (int i = 0; i < populationSize; i++)
             {
-                Individual individual = new Individual();
-                individual.Evaluate();
+                Individual individual = new Individual(ghHandler);
+                //individual.Evaluate();
+                individual.fitnesses = ghHandler.GetFitnessValues();
                 population.Add(individual);
             }
         }
 
 
 
-        // Offspring: Produce offspring
+        // Offspring: Produces the entire new generation of offspring 
         public List<Individual> Offspring()
         {
-            Individual a, b, c;
+            Individual parent1, parent2, child;
             List<Individual> offspring = new List<Individual>(populationSize);
 
             for (int i = 0; i < populationSize; i++)
             {
-                a = SelectParent();
-                b = SelectParent();
-                c = Breed(a, b);
-                c.fitnesses.Clear();    // DELETE LATER
-                c.Evaluate();
+                parent1 = SelectParent();
+                parent2 = SelectParent();
+                child = Breed(parent1, parent2);
+                //child.Evaluate();
+                child.fitnesses = ghHandler.GetFitnessValues();
 
-                offspring.Add(c);
+                offspring.Add(child);
             }
 
             return offspring;
         }
-        
 
+
+        // SelectParent: Selects an individual from the population to reproduce, while giving priority to individuals in the beginning (= better ranked) of the list
         private Individual SelectParent()
         {
             int chosen = (int)Math.Floor(((double)population.Count - 1e-3) * Math.Pow((random.NextDouble()), 2));
             return population[chosen];
         }
 
-        private Individual Breed(Individual a, Individual b)
+
+        // Breed: Produces a new child by process of Crossover and Mutation
+        private Individual Breed(Individual parent1, Individual parent2)
         {
-            Individual child = Crossover(a, b);
+            Individual child = Crossover(parent1, parent2);
+            SetGeneValues(List<double> genes)
             child.Mutate();
             return child;
         }
 
 
-        private Individual Crossover(Individual a, Individual b)
+        // Crossover: Combines the genes of two parents to generate new offspring
+        private Individual Crossover(Individual parent1, Individual parent2)
         {
             if (random.NextDouble() > NSGAII_Algorithm.probabilityCrossover)
-                return random.NextDouble() < 0.5 ? a : b;
+                return random.NextDouble() < 0.5 ? parent1 : parent2;
 
-            Individual c = new Individual();
-            for (int i = 0; i < c.genes.Count; i++)
+            Individual child = new Individual(ghHandler);
+            for (int i = 0; i < child.genes.Count; i++)
             {
                 if (random.NextDouble() < 0.5)
-                    c.genes[i] = a.genes[i];
+                    child.genes[i] = parent1.genes[i];
                 else
-                    c.genes[i] = b.genes[i];
+                    child.genes[i] = parent2.genes[i];
             }
 
-            return c;
+            return child;
         }
 
 
-        // FastNonDominatedSort: Sorts population
+        // FastNonDominatedSort: Sorts the population by Pareto Dominance and subdivides it in different fronts
         public void FastNonDominatedSort()
         {
             nonDominatedFront.Clear();
@@ -155,7 +162,7 @@ namespace NSGA_II
         public void CrowdingDistance(List<Individual> front)
         {
             int size = front.Count;
-            int numObjectives = front[0].fitnesses.Count;    // Refactor this?
+            int numObjectives = GH_ParameterHandler.gh.Params.Input[1].Sources.Count; 
             front.ForEach(p => p.crowdingDistance = 0);
 
             for (int m = 0; m < numObjectives; m++)

@@ -2,12 +2,13 @@
 using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
-
+using Grasshopper.Kernel;
 
 namespace NSGA_II
 {
     public static class NSGAII_Algorithm
     {
+        // Initial Optimization Parameters
         public static int PopulationSize = 100;
 
         public static int currentGeneration = 0;
@@ -22,11 +23,12 @@ namespace NSGA_II
         public const double probabilityMutation = 0.05;
 
 
+
         // Final Population lists
         internal static List<Individual> archive;
-        internal static List<Individual> lastParetoFront;
-        internal static List<Individual> paretoFrontHistory;
+        internal static List<Individual> paretoHistory;
         internal static List<Individual> currentPopulation;
+        internal static List<Individual> currentParetoFront;
 
 
 
@@ -34,10 +36,12 @@ namespace NSGA_II
         // Stop Condition: Can be either a specified number of generations, a specified duration, or both (whichever comes first)
         private static bool StopCondition()
         {
-            if (NSGAII_Editor.GenerationsChecked)
+            // Stop Condition: Number of Generations
+            if (NSGAII_Editor.GenerationsChecked) 
             {
                 if (currentGeneration > MaxGenerations) return false;
             }
+            // Stop Condition: Duration of the Optimization
             else if (NSGAII_Editor.TimeChecked)
             {
                 if (stopWatch.Elapsed.TotalSeconds > MaxDuration) return false;
@@ -64,17 +68,19 @@ namespace NSGA_II
         {
             // Initialize Archive Lists
             archive = new List<Individual>();
-            paretoFrontHistory = new List<Individual>();
+            paretoHistory = new List<Individual>();
 
-            // Set up inputs
-            GH_ParameterHandler.SetGeneInputs();
-            GH_ParameterHandler.SetFitnessInputs();    
+            // Create Parameter Handler
+            var component = e.Argument as NSGAII_GHComponent;
+            var GhHandler = new GH_ParameterHandler(component);
+
+            //GhHandler.SetSliderValues();
 
 
             // START OPTIMIZATION
             stopWatch.Start();
 
-            Population pop = new Population(PopulationSize);
+            Population pop = new Population(PopulationSize, GhHandler);
 
             pop.FastNonDominatedSort();
 
@@ -84,15 +90,14 @@ namespace NSGA_II
                 pop.population.AddRange(offspring);
                 pop.FastNonDominatedSort();
 
-                // Selection of the Next Generation using the Crowded-Comparison Operator
+                // Selection of the Next Generation by Rank and Crowding Distance
                 var newGeneration = new List<Individual>();
 
                 foreach (var front in pop.fronts)
                 {
-                    pop.CrowdingDistance(front);
-
                     if (newGeneration.Count + front.Count > PopulationSize)
                     {
+                        pop.CrowdingDistance(front);
                         var orderedFront = front.OrderBy(p => p.rank).ThenByDescending(p => p.crowdingDistance).ToList();
                         for (int j = newGeneration.Count; j < PopulationSize; j++)
                             newGeneration.Add(orderedFront[j - newGeneration.Count]);
@@ -119,13 +124,12 @@ namespace NSGA_II
 
                 // UPDATE ARCHIVE LISTS
                 archive.AddRange(pop.population);
-                lastParetoFront = pop.fronts[0];
+                currentParetoFront = pop.fronts[0];
                 currentPopulation = pop.population;
-                paretoFrontHistory.AddRange(pop.fronts[0]);
+                paretoHistory.AddRange(pop.fronts[0]);
             }
 
             stopWatch.Stop();
         }
-
     }
 }

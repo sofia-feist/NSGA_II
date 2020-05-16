@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 
@@ -8,7 +9,7 @@ namespace NSGA_II
     internal class Individual
     {
         private static Random random = new Random();
-        private static GH_Component GHComponent;
+        private static GH_ParameterHandler ghHandler;
 
         public List<double> genes;
         public List<double> fitnesses;
@@ -20,18 +21,19 @@ namespace NSGA_II
         
 
 
-        public Individual()
+        public Individual(GH_ParameterHandler _ghHandler)
         {
-            GHComponent = GH_ParameterHandler.gh;
+            ghHandler = _ghHandler;
 
-            genes = new List<double>(); //GH_ParameterHandler.GetGeneValues(); //new List<double>();
+            genes = ghHandler.GetSetGeneValues();
 
-            for (int i = 0; i < 2; i++)
-            {
-                genes.Add(Math.Round(random.NextDouble(), 2));
-            }
+            //genes = new List<double>();
 
-            fitnesses = new List<double>();
+            //for (int i = 0; i < 2; i++)
+            //{
+            //    genes.Add(Math.Round(random.NextDouble(), 2));
+            //}
+
         }
 
 
@@ -43,14 +45,17 @@ namespace NSGA_II
             for (int i = 0; i < genes.Count; i++)
             {
                 if (random.NextDouble() < NSGAII_Algorithm.probabilityMutation)
-                    genes[i] = random.NextDouble();   //Set in Slider !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    //genes[i] = random.NextDouble();
+                    genes[i] = ghHandler.ChangeGeneValue(i); 
             }
         }
 
 
-        // Evaluate: Evaluates an individual's fitness
-        public void Evaluate() //  UPDATE TO RECEIVE OUTSIDE FITNESSES (performance analyses)   ///////////////
+        //// Evaluate: Evaluates an individual's fitness
+        public void Evaluate() //  UPDATE TO RECEIVE OUTSIDE FITNESSES 
         {
+            fitnesses = new List<double>();
+            
             double fitness1 = Math.Pow(genes[0], 2.0);
             double fitness2 = Math.Pow(genes[1] - 2.0, 2.0);
 

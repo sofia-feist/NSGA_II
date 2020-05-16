@@ -45,11 +45,17 @@ namespace NSGA_II
             this.DurationTimeMinutes = new System.Windows.Forms.NumericUpDown();
             this.RunOptimizationButton = new System.Windows.Forms.Button();
             this.stopResetButton = new System.Windows.Forms.Button();
+            this.FitnessDataGrid = new System.Windows.Forms.DataGridView();
+            this.CheckUsedGenes = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Genes = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Minimize = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Maximize = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.PopSizeInputField)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NGenerationsInputField)).BeginInit();
             this.StopConditionG.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DurationTimeHours)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.DurationTimeMinutes)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FitnessDataGrid)).BeginInit();
             this.SuspendLayout();
             // 
             // PopulationSizeLabel
@@ -266,21 +272,79 @@ namespace NSGA_II
             this.RunOptimizationButton.UseVisualStyleBackColor = true;
             this.RunOptimizationButton.Click += new System.EventHandler(this.RunOptimizationButton_Click);
             // 
-            // resetButton
+            // stopResetButton
             // 
             this.stopResetButton.Location = new System.Drawing.Point(200, 286);
-            this.stopResetButton.Name = "resetButton";
+            this.stopResetButton.Name = "stopResetButton";
             this.stopResetButton.Size = new System.Drawing.Size(90, 33);
             this.stopResetButton.TabIndex = 12;
             this.stopResetButton.Text = "Stop";
             this.stopResetButton.UseVisualStyleBackColor = true;
             this.stopResetButton.Click += new System.EventHandler(this.StopResetButton_Click);
             // 
+            // FitnessDataGrid
+            // 
+            this.FitnessDataGrid.AllowUserToResizeColumns = false;
+            this.FitnessDataGrid.AllowUserToResizeRows = false;
+            this.FitnessDataGrid.BackgroundColor = System.Drawing.SystemColors.ControlLight;
+            this.FitnessDataGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.FitnessDataGrid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
+            this.FitnessDataGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.FitnessDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.FitnessDataGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.CheckUsedGenes,
+            this.Genes,
+            this.Minimize,
+            this.Maximize});
+            this.FitnessDataGrid.Location = new System.Drawing.Point(16, 336);
+            this.FitnessDataGrid.Name = "FitnessDataGrid";
+            this.FitnessDataGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            this.FitnessDataGrid.RowHeadersVisible = false;
+            this.FitnessDataGrid.RowHeadersWidth = 51;
+            this.FitnessDataGrid.RowTemplate.Height = 24;
+            this.FitnessDataGrid.Size = new System.Drawing.Size(274, 169);
+            this.FitnessDataGrid.TabIndex = 13;
+            this.FitnessDataGrid.Visible = false;
+            this.FitnessDataGrid.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.GenesDataGrid_CellContentClick);
+            // 
+            // CheckUsedGenes
+            // 
+            this.CheckUsedGenes.HeaderText = "";
+            this.CheckUsedGenes.MinimumWidth = 6;
+            this.CheckUsedGenes.Name = "CheckUsedGenes";
+            this.CheckUsedGenes.Width = 30;
+            // 
+            // Genes
+            // 
+            this.Genes.HeaderText = "Fitnesses";
+            this.Genes.MinimumWidth = 6;
+            this.Genes.Name = "Genes";
+            this.Genes.Width = 142;
+            // 
+            // Minimize
+            // 
+            this.Minimize.HeaderText = "Min";
+            this.Minimize.MinimumWidth = 6;
+            this.Minimize.Name = "Minimize";
+            this.Minimize.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.Minimize.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.Minimize.Width = 50;
+            // 
+            // Maximize
+            // 
+            this.Maximize.HeaderText = "Max";
+            this.Maximize.MinimumWidth = 6;
+            this.Maximize.Name = "Maximize";
+            this.Maximize.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.Maximize.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            this.Maximize.Width = 50;
+            // 
             // NSGAII_Editor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1312, 693);
+            this.Controls.Add(this.FitnessDataGrid);
             this.Controls.Add(this.stopResetButton);
             this.Controls.Add(this.RunOptimizationButton);
             this.Controls.Add(this.StopConditionG);
@@ -288,6 +352,7 @@ namespace NSGA_II
             this.Controls.Add(this.PopSizeInputField);
             this.Controls.Add(this.OkButton);
             this.Font = new System.Drawing.Font("Source Sans Pro", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.MinimumSize = new System.Drawing.Size(325, 600);
             this.Name = "NSGAII_Editor";
@@ -298,6 +363,7 @@ namespace NSGA_II
             this.StopConditionG.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DurationTimeHours)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.DurationTimeMinutes)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.FitnessDataGrid)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -319,6 +385,11 @@ namespace NSGA_II
         private Button RunOptimizationButton;
         private Label H_MinsLabel;
         private Button stopResetButton;
+        private DataGridView FitnessDataGrid;
+        private DataGridViewCheckBoxColumn CheckUsedGenes;
+        private DataGridViewTextBoxColumn Genes;
+        private DataGridViewCheckBoxColumn Minimize;
+        private DataGridViewCheckBoxColumn Maximize;
     }
 }
 

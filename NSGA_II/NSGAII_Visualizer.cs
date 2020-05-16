@@ -20,6 +20,10 @@ namespace NSGA_II
         private GH_Component gh;
 
 
+        string chartAxisLabelX = "FITNESS 1";  // Allow Textbox to change the name of the fitnesses
+        string chartAxisLabelY = "FITNESS 2";
+
+
         public Chart ParetoChart;
 
         public Label Population;
@@ -32,10 +36,10 @@ namespace NSGA_II
 
 
 
-        public NSGAII_Visualizer(NSGAII_Editor editor)
+        public NSGAII_Visualizer(NSGAII_Editor editor, GH_Component _GHComponent)
         {
             Editor = editor;
-            gh = GH_ParameterHandler.gh;
+            gh = _GHComponent;
 
             InitializeParetoChart();
             InitializeStatistics();
@@ -68,12 +72,33 @@ namespace NSGA_II
                 Name = "ChartArea",
                 BackColor = Color.White
             };
-            ParetoChart.ChartAreas.Add(chartArea);                                  // UPDATE AXES WITH SLIDER INFO?
-            ParetoChart.ChartAreas["ChartArea"].AxisX.RoundAxisValues();
-            ParetoChart.ChartAreas["ChartArea"].AxisX.ScaleView.Zoomable = true;
-            ParetoChart.ChartAreas["ChartArea"].AxisY.RoundAxisValues();
-            ParetoChart.ChartAreas["ChartArea"].AxisY.ScaleView.Zoomable = true;
-             
+            // Axis Info   
+            chartArea.AxisX.Title = chartAxisLabelX;   // Custom Titles? (Named Genes)
+            chartArea.AxisY.Title = chartAxisLabelY;
+            chartArea.AxisX.RoundAxisValues();
+            chartArea.AxisX.ScaleView.Zoomable = true;
+            chartArea.AxisY.RoundAxisValues();
+            chartArea.AxisY.ScaleView.Zoomable = true;
+            //Scroll Bar
+            AxisScrollBar scrollX = new AxisScrollBar
+            {
+                Size = 8,
+                ButtonColor = Color.FromArgb(210,210,210),
+                ButtonStyle = ScrollBarButtonStyles.None
+
+            };
+            chartArea.AxisX.ScrollBar = scrollX;
+            AxisScrollBar scrollY = new AxisScrollBar
+            {
+                Size = 8,
+                ButtonColor = Color.FromArgb(210, 210, 210),
+                ButtonStyle = ScrollBarButtonStyles.None
+
+            };
+            chartArea.AxisY.ScrollBar = scrollY;
+            ParetoChart.ChartAreas.Add(chartArea);
+
+
             // LEGEND
             Legend legend = new Legend();
             ParetoChart.Legends.Add(legend);
@@ -96,6 +121,9 @@ namespace NSGA_II
                 Palette = ChartColorPalette.SeaGreen
             };
             ParetoChart.Series.Add(paretoSeries);
+            ParetoChart.Series[0].Points.AddXY(1, 1); 
+            ParetoChart.Series[0].Points.AddXY(10, 10);
+            ParetoChart.Series[1].Points.AddXY(3, 3);
 
             // EVENTS
             ParetoChart.MouseWheel += Chart_MouseWheel;

@@ -1,4 +1,5 @@
-﻿using Grasshopper.Kernel;
+﻿using Grasshopper.GUI;
+using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace NSGA_II
 {
     public partial class NSGAII_Editor : Form
     {
+        private static NSGAII_GHComponent GH_Component;
         private NSGAII_Visualizer visualizer;
 
         internal static bool TimeChecked;
@@ -24,15 +26,37 @@ namespace NSGA_II
 
 
         // Constructor
-        public NSGAII_Editor()
+        public NSGAII_Editor(NSGAII_GHComponent _GHComponent)
         {
-            visualizer = new NSGAII_Visualizer(this);
+            GH_Component = _GHComponent;
+            visualizer = new NSGAII_Visualizer(this, GH_Component);
 
             InitializeComponent();     // <- Windows Forms Window
             InitializeOptimization();
 
             TimeChecked = TimeCheckBox.Checked;
             GenerationsChecked = GenerationsCheckBox.Checked;
+
+            //for (int i = 0; i < 3; i++)// GH_Component.Params.Input[1].SourceCount; i++)
+            //{
+            //    DataGridViewRow row = (DataGridViewRow)FitnessDataGrid.Rows[0].Clone();
+            //    FitnessDataGrid.Rows.Add(row);
+            //    ////DataGridViewCheckBoxCell inUseCheckBox = new DataGridViewCheckBoxCell() { Selected = true };
+            //    //row.Cells[0].Selected = true;
+            //    ////DataGridViewCheckBoxCell FitnessTextkBox = new DataGridViewCheckBoxCell() { Value = "Fitness " + (i + 1) };
+            //    //row.Cells["Fitnesses"].Value = "Fitness " + (i + 1);
+            //    ////DataGridViewCheckBoxCell MinimizeCheckBox = new DataGridViewCheckBoxCell() { Selected = true };
+            //    //row.Cells["Minimize"].Selected = true;
+            //    ////DataGridViewCheckBoxCell MaximizeCheckBox = new DataGridViewCheckBoxCell() { Selected = false };
+            //    //row.Cells["Maximize"].Selected = false;
+
+                
+            //}
+
+                
+                
+
+            
 
 
             // Asynchronous Run Optimization
@@ -90,10 +114,10 @@ namespace NSGA_II
             stopResetButton.Text = "Reset";
 
             visualizer.CurrentGeneration.Text = "Current Generation: " + (NSGAII_Algorithm.currentGeneration - 1);
-            visualizer.TimeElapsed.Text = "Time Elapsed: " + TimeSpan.FromSeconds(NSGAII_Algorithm.stopWatch.Elapsed.TotalSeconds).ToString(@"hh\:mm\:ss");  
+            visualizer.TimeElapsed.Text = "Time Elapsed: " + TimeSpan.FromSeconds(NSGAII_Algorithm.stopWatch.Elapsed.TotalSeconds).ToString(@"hh\:mm\:ss");
 
             visualizer.AddPointsWithLabels(NSGAII_Algorithm.archive, visualizer.ParetoChart.Series[0]);
-            visualizer.AddPointsWithLabels(NSGAII_Algorithm.paretoFrontHistory, visualizer.ParetoChart.Series[1]);
+            visualizer.AddPointsWithLabels(NSGAII_Algorithm.paretoHistory, visualizer.ParetoChart.Series[1]);
         }
         #endregion
 
@@ -192,10 +216,10 @@ namespace NSGA_II
         // RunOptimizationButton_Click: Event Method for when the Run Optimization Button is pressed
         private void RunOptimizationButton_Click(object sender, EventArgs e)
         {
-            if (GH_ParameterHandler.gh.Params.Input[0].Sources.Count < 1)
-                MessageBox.Show("Component must have at least one slider gene input", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            else if (GH_ParameterHandler.gh.Params.Input[1].Sources.Count < 2)
-                MessageBox.Show("Component must have at least two fitness inputs", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //if (GH_Component.Params.Input[0].Sources.Count < 1)
+            //    MessageBox.Show("Component must have at least one slider gene input", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //else if (GH_Component.Params.Input[1].Sources.Count < 1)
+            //    MessageBox.Show("Component must have at least two fitness inputs", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             if (TimeCheckBox.Checked == false && GenerationsCheckBox.Checked == false)
                 MessageBox.Show("Select a Stop condition", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             else if (backgroundWorker.IsBusy == false)
@@ -208,7 +232,7 @@ namespace NSGA_II
                 RunOptimizationButton.FlatStyle = FlatStyle.Flat;
 
                 // Start Optimization in the background worker
-                backgroundWorker.RunWorkerAsync();
+                backgroundWorker.RunWorkerAsync(GH_Component);
             }
         }
 
@@ -216,6 +240,7 @@ namespace NSGA_II
         // ResetButton_Click: Toggles between Stop/Reset Optimization if the the latter is running
         private void StopResetButton_Click(object sender, EventArgs e)
         {
+            // Stop Functionality:
             if (OptimizationRunning == true)
             {
                 // Cancel Optimization
@@ -225,6 +250,7 @@ namespace NSGA_II
                 // Reset Button Text
                 stopResetButton.Text = "Reset";
             }
+            // Reset Functionality:
             else
             {
                 // Reset Button Text
@@ -239,23 +265,13 @@ namespace NSGA_II
                 InitializeOptimization();
             }
         }
+
         #endregion
 
-        //GH_ParameterHandler.SetSliderValues(GH_ParameterHandler.gh.OnPingDocument()); //gh.OnPingDocument().ScheduleSolution(5, SetSliderValues);
-        //GH_ParameterHandler.SetGeneInputs();
+        private void GenesDataGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
 
-        //List<double> genes = GH_ParameterHandler.GetGeneValues();
-
-        //Label x = new Label
-        //{
-        //    Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
-        //    ForeColor = Color.Gray,
-        //    Location = new Point(14, 500),
-        //    Size = new Size(250, 20),
-        //    Text = genes[0] + "," + genes[1] + "," + genes[2]
-        //};
-
-        //Controls.Add(x);
+        }
     }
 
 }

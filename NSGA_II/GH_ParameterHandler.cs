@@ -20,7 +20,8 @@ namespace NSGA_II
 
         private static List<GH_NumberSlider> geneInputSliders;
 
-        internal static bool SolutionFinished = false;
+        private AutoResetEvent waitHandle;
+
 
 
 
@@ -30,9 +31,11 @@ namespace NSGA_II
         {
             gh = _GHComponent;
             ghDoc = gh.OnPingDocument();
-            ghDoc.RaiseEvents = true;
 
             InitializeGeneInputs();
+
+            //ghDoc.SolutionEnd += new GH_Document.SolutionEndEventHandler(OnSolutionEnd);
+            //waitHandle = new AutoResetEvent(false);
         }
 
 
@@ -43,7 +46,7 @@ namespace NSGA_II
 
             foreach (IGH_Param source in gh.Params.Input[0].Sources)
             {
-                GH_NumberSlider slider = source as GH_NumberSlider;   // Add gene pools as well?
+                GH_NumberSlider slider = source as GH_NumberSlider;   // Add gene pool inputs as well?
 
                 if (slider != null)
                     geneInputSliders.Add(slider);
@@ -56,7 +59,7 @@ namespace NSGA_II
 
 
 
-        // GetGeneValues: Sets the gene sliders to a random position and returns the resulting gene values
+        // GetSetGeneValues: Sets the gene sliders to a random position and returns the resulting gene values
         internal List<double> GetSetGeneValues()
         {
             var genes = new List<double>();
@@ -70,15 +73,16 @@ namespace NSGA_II
                 slider.Slider.RaiseEvents = true;
             }
 
-            Recalculate();
+            RecalculateSolution();
 
             return genes;
         }
 
-        // GetGeneValues: Sets the gene sliders to a random position and returns the resulting gene values
-        internal void SetGeneValues(List<double> genes)
+
+        // SetSliders: Sets the gene sliders to the given gene values
+        internal void SetSliders(List<double> genes)
         {
-            for (int i = 0; i < geneInputSliders.Count; i++)
+            for (int i = 0; i < genes.Count; i++)
             {
                 GH_NumberSlider slider = geneInputSliders[i];
 
@@ -88,12 +92,12 @@ namespace NSGA_II
                 slider.Slider.RaiseEvents = true;
             }
 
-            Recalculate();
+            RecalculateSolution();
         }
 
 
-        // ChangeGeneValue: Changes one slider value for mutation and returns the new gene value
-        internal double ChangeGeneValue(int index)
+        // ChangeGeneValue: Changes only one slider value for mutation and returns the new gene value
+        internal double MutateGeneValue(int index)
         {
             double gene;
 
@@ -105,32 +109,26 @@ namespace NSGA_II
             slider.ExpireSolution(false);
             slider.Slider.RaiseEvents = true;
 
-            Recalculate();
+            RecalculateSolution();
 
             return gene;
         }
 
 
         // Recalculate: Recalculates Grasshopper solution
-        private void Recalculate()
+        private void RecalculateSolution()
         {
-            //while (ghDoc.SolutionState != GH_ProcessStep.PreProcess || ghDoc.SolutionDepth != 0) { }
-            //SolutionFinished = false;
-
             //ghDoc.ScheduleSolution(1);
-            //Thread.Sleep(1);
+            //waitHandle.WaitOne();
+
             ghDoc.NewSolution(false, GH_SolutionMode.CommandLine);
-
-            //ghDoc.SolutionEnd += new GH_Document.SolutionEndEventHandler(SolutionEndEvent);
-            
-
             while (ghDoc.SolutionState != GH_ProcessStep.PostProcess || ghDoc.SolutionDepth != 0) { }
         }
 
-        static void SolutionEndEvent(object sender, GH_SolutionEventArgs e)
-        {
-            //SolutionFinished = true;
-        }
+        //private void OnSolutionEnd(object sender, GH_SolutionEventArgs e)
+        //{
+        //    waitHandle.Set();
+        //}
 
 
 

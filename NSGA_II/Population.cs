@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using Grasshopper.Kernel;
 using System.Linq;
+using System.Collections.Generic;
+
 
 
 namespace NSGA_II
@@ -31,7 +31,6 @@ namespace NSGA_II
             for (int i = 0; i < populationSize; i++)
             {
                 Individual individual = new Individual(ghHandler);
-                //individual.Evaluate();
                 individual.fitnesses = ghHandler.GetFitnessValues();
                 population.Add(individual);
             }
@@ -50,7 +49,6 @@ namespace NSGA_II
                 parent1 = SelectParent();
                 parent2 = SelectParent();
                 child = Breed(parent1, parent2);
-                //child.Evaluate();
                 child.fitnesses = ghHandler.GetFitnessValues();
 
                 offspring.Add(child);
@@ -72,7 +70,7 @@ namespace NSGA_II
         private Individual Breed(Individual parent1, Individual parent2)
         {
             Individual child = Crossover(parent1, parent2);
-            SetGeneValues(List<double> genes)
+            ghHandler.SetSliders(child.genes);
             child.Mutate();
             return child;
         }

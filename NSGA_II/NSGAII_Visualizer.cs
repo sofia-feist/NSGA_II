@@ -1,15 +1,10 @@
-﻿using Grasshopper.Kernel;
-using Grasshopper.Kernel.Special;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Timers;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization;
 using System.Windows.Forms.DataVisualization.Charting;
+using Grasshopper.Kernel;
 
 
 namespace NSGA_II
@@ -19,9 +14,7 @@ namespace NSGA_II
         private NSGAII_Editor Editor;
         private GH_Component gh;
 
-
-        string chartAxisLabelX = "FITNESS 1";  // Allow Textbox to change the name of the fitnesses
-        string chartAxisLabelY = "FITNESS 2";
+        internal List<string> fitnessNames;
 
 
         public Chart ParetoChart;
@@ -34,6 +27,10 @@ namespace NSGA_II
 
         private TextBox solutionInfo;
 
+        private CheckBox HistorySeriesCheckBox;
+        private CheckBox ParetoSeriesCheckBox;
+
+
 
 
         public NSGAII_Visualizer(NSGAII_Editor editor, GH_Component _GHComponent)
@@ -41,9 +38,11 @@ namespace NSGA_II
             Editor = editor;
             gh = _GHComponent;
 
+
             InitializeParetoChart();
             InitializeStatistics();
             InitializeTexbox();
+            InitializeLegendCheckBoxes();
         }
 
 
@@ -54,7 +53,7 @@ namespace NSGA_II
         ////////////////////////////////////////////////////////////////////////////
 
         // InitializeParetoChart: Initializes the Pareto Chart
-        public void InitializeParetoChart()
+        private void InitializeParetoChart()
         {
             // CHART
             ParetoChart = new Chart
@@ -66,6 +65,7 @@ namespace NSGA_II
                 Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom
             };
 
+
             // CHART AREA
             ChartArea chartArea = new ChartArea
             { 
@@ -73,8 +73,6 @@ namespace NSGA_II
                 BackColor = Color.White
             };
             // Axis Info   
-            chartArea.AxisX.Title = chartAxisLabelX;   // Custom Titles? (Named Genes)
-            chartArea.AxisY.Title = chartAxisLabelY;
             chartArea.AxisX.RoundAxisValues();
             chartArea.AxisX.ScaleView.Zoomable = true;
             chartArea.AxisY.RoundAxisValues();
@@ -102,6 +100,7 @@ namespace NSGA_II
             // LEGEND
             Legend legend = new Legend();
             ParetoChart.Legends.Add(legend);
+            
 
             // SERIES
             Series historySeries = new Series
@@ -118,18 +117,17 @@ namespace NSGA_II
                 Name = "Pareto Solutions",
                 ChartType = SeriesChartType.FastPoint,
                 MarkerSize = 8,
-                Palette = ChartColorPalette.SeaGreen
+                Color = Color.SteelBlue
             };
             ParetoChart.Series.Add(paretoSeries);
-            ParetoChart.Series[0].Points.AddXY(1, 1); 
-            ParetoChart.Series[0].Points.AddXY(10, 10);
-            ParetoChart.Series[1].Points.AddXY(3, 3);
+
 
             // EVENTS
             ParetoChart.MouseWheel += Chart_MouseWheel;
             ParetoChart.MouseMove += Chart_MouseMove;
 
             Editor.Controls.Add(ParetoChart);
+            ParetoChart.SendToBack();
         }
 
 
@@ -171,7 +169,7 @@ namespace NSGA_II
 
             if (e.Delta < 0)
             {
-                xAxis.ScaleView.ZoomReset();    // Fix Zoom out?
+                xAxis.ScaleView.ZoomReset();   
                 yAxis.ScaleView.ZoomReset();
             }
             else if (e.Delta > 0)
@@ -187,9 +185,69 @@ namespace NSGA_II
         }
 
 
+        // InitializeLegendCheckBoxes: Initializes the checkboxes for the legend
+        private void InitializeLegendCheckBoxes()
+        {
+            HistorySeriesCheckBox = new CheckBox
+            {
+                Checked = true,
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = SystemColors.ControlDark,
+                Location = new Point(900, 58),
+                Size = new Size(12, 12),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            HistorySeriesCheckBox.CheckedChanged += new EventHandler(HistorySeriesCheckBox_CheckedChanged);
+
+            Editor.Controls.Add(HistorySeriesCheckBox);
+            HistorySeriesCheckBox.BringToFront();
+
+
+            ParetoSeriesCheckBox = new CheckBox
+            {
+                Checked = true,
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = SystemColors.ControlDark,
+                Location = new Point(900, 75),
+                Size = new Size(12, 12),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right
+            };
+            ParetoSeriesCheckBox.CheckedChanged += new EventHandler(ParetoSeriesCheckBox_CheckedChanged);
+
+            Editor.Controls.Add(ParetoSeriesCheckBox);
+            ParetoSeriesCheckBox.BringToFront();
+        }
+
+
+        // HistorySeriesCheckBox_CheckedChanged: Enables/Disables the History Series on the chart
+        private void HistorySeriesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Series historySeries = ParetoChart.Series["Solution History"];
+
+            if (HistorySeriesCheckBox.Checked)
+                historySeries.Color = Color.LightGray;
+            else
+                historySeries.Color = Color.FromArgb(0, 0, 0, 0);
+        }
+
+
+        // ParetoSeriesCheckBox_CheckedChanged: Enables/Disables the Pareto Series on the chart
+        private void ParetoSeriesCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            Series paretoSeries = ParetoChart.Series["Pareto Solutions"];
+
+            if (ParetoSeriesCheckBox.Checked)
+                paretoSeries.Color = Color.SteelBlue;
+            else
+                paretoSeries.Color = Color.FromArgb(0, 0, 0, 0);
+        }
+
+
+
+
         // AddPointsWithLabels: Adds data points to a given series using labels to store solutions' information (genes/fitness)
         // x and y values of the datapoints correspoint to the first two fitness values of the solutions
-        // 3D+ DIMENTIONS NOT IMPLEMENTED YET
+        // 3D+ DIMENTIONS NOT IMPLEMENTED ON CHART YET
         internal void AddPointsWithLabels(List<Individual> solutions, Series series)
         {
             foreach (Individual individual in solutions)
@@ -197,19 +255,19 @@ namespace NSGA_II
                 string geneLabel = "";
                 string fitnessLabel = "";
 
-                for (int i = 0; i < individual.genes.Count; i++)                                    // ROUND NEEDED?
-                    geneLabel += $"Gene {i + 1}: { Math.Round(individual.genes[i], 3) }\r\n";         // NAME GENES/OBJECTIVES??
+                // Build Gene Label
+                for (int i = 0; i < individual.genes.Count; i++)                                   
+                    geneLabel += $"Gene {i + 1}: { Math.Round(individual.genes[i], 3) }\r\n";       
 
+                // Build Fitness Label
                 for (int i = 0; i < individual.fitnesses.Count; i++)
-                {
-                    if (i != individual.fitnesses.Count - 1)
-                        fitnessLabel += $"Fitness {i + 1}: {Math.Round(individual.fitnesses[i], 3)}\r\n";
-                    else
-                        fitnessLabel += $"Fitness {i + 1}: {Math.Round(individual.fitnesses[i], 3)}";  // Last one doesn't have a Newline at the end
-                }
+                    fitnessLabel += $"{fitnessNames[i]}: {Math.Round(individual.fitnesses[i], 3)}\r\n";
+                
+                double chosenFitness1 = individual.fitnesses[0];    // IMPROVE : Allow user to select fitnesses to display on Chart
+                double chosenFitness2 = individual.fitnesses[1];
 
-                DataPoint pt = new DataPoint(individual.fitnesses[0], individual.fitnesses[1]);      // MORE DIMENTIONS?
-                pt.Label = geneLabel + fitnessLabel;
+                DataPoint pt = new DataPoint(chosenFitness1, chosenFitness2);     
+                pt.Label = geneLabel + fitnessLabel.Substring(0, fitnessLabel.Length - 2);
                 series.Points.Add(pt);
             }
         }
@@ -293,15 +351,12 @@ namespace NSGA_II
             {
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 ForeColor = Color.Gray,
-                Location = new Point(14, 650), //440
+                Location = new Point(14, 650), 
                 Size = new Size(125, 20),
                 Text = "No of Objectives: " + gh.Params.Input[1].Sources.Count
             };
             Editor.Controls.Add(nObjectives);
         }
-
-        public void UpdateStatistics()    // DO THIS HERE?
-        { }
 
     }
 }

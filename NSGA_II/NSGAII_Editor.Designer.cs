@@ -31,6 +31,8 @@ namespace NSGA_II
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             this.PopulationSizeLabel = new System.Windows.Forms.Label();
             this.PopSizeInputField = new System.Windows.Forms.NumericUpDown();
             this.OkButton = new System.Windows.Forms.Button();
@@ -46,10 +48,6 @@ namespace NSGA_II
             this.RunOptimizationButton = new System.Windows.Forms.Button();
             this.stopResetButton = new System.Windows.Forms.Button();
             this.FitnessDataGrid = new System.Windows.Forms.DataGridView();
-            this.CheckUsedGenes = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.Genes = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Minimize = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.Maximize = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.PopSizeInputField)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NGenerationsInputField)).BeginInit();
             this.StopConditionG.SuspendLayout();
@@ -290,12 +288,23 @@ namespace NSGA_II
             this.FitnessDataGrid.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.FitnessDataGrid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
             this.FitnessDataGrid.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Source Sans Pro", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.FitnessDataGrid.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.FitnessDataGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.FitnessDataGrid.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
-            this.CheckUsedGenes,
-            this.Genes,
-            this.Minimize,
-            this.Maximize});
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Source Sans Pro", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.FitnessDataGrid.DefaultCellStyle = dataGridViewCellStyle2;
             this.FitnessDataGrid.Location = new System.Drawing.Point(16, 336);
             this.FitnessDataGrid.Name = "FitnessDataGrid";
             this.FitnessDataGrid.RowHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.None;
@@ -304,40 +313,8 @@ namespace NSGA_II
             this.FitnessDataGrid.RowTemplate.Height = 24;
             this.FitnessDataGrid.Size = new System.Drawing.Size(274, 169);
             this.FitnessDataGrid.TabIndex = 13;
-            this.FitnessDataGrid.Visible = false;
-            this.FitnessDataGrid.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.GenesDataGrid_CellContentClick);
-            // 
-            // CheckUsedGenes
-            // 
-            this.CheckUsedGenes.HeaderText = "";
-            this.CheckUsedGenes.MinimumWidth = 6;
-            this.CheckUsedGenes.Name = "CheckUsedGenes";
-            this.CheckUsedGenes.Width = 30;
-            // 
-            // Genes
-            // 
-            this.Genes.HeaderText = "Fitnesses";
-            this.Genes.MinimumWidth = 6;
-            this.Genes.Name = "Genes";
-            this.Genes.Width = 142;
-            // 
-            // Minimize
-            // 
-            this.Minimize.HeaderText = "Min";
-            this.Minimize.MinimumWidth = 6;
-            this.Minimize.Name = "Minimize";
-            this.Minimize.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Minimize.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.Minimize.Width = 50;
-            // 
-            // Maximize
-            // 
-            this.Maximize.HeaderText = "Max";
-            this.Maximize.MinimumWidth = 6;
-            this.Maximize.Name = "Maximize";
-            this.Maximize.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Maximize.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            this.Maximize.Width = 50;
+            this.FitnessDataGrid.CellMouseUp += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.FitnessDataGrid_CellMouseUp);
+            this.FitnessDataGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.FitnessDataGrid_CellValueChanged);
             // 
             // NSGAII_Editor
             // 
@@ -385,11 +362,7 @@ namespace NSGA_II
         private Button RunOptimizationButton;
         private Label H_MinsLabel;
         private Button stopResetButton;
-        private DataGridView FitnessDataGrid;
-        private DataGridViewCheckBoxColumn CheckUsedGenes;
-        private DataGridViewTextBoxColumn Genes;
-        private DataGridViewCheckBoxColumn Minimize;
-        private DataGridViewCheckBoxColumn Maximize;
+        internal DataGridView FitnessDataGrid;
     }
 }
 

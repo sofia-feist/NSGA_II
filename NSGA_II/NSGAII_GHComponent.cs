@@ -28,34 +28,18 @@ namespace NSGA_II
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddNumberParameter("Genes", "G", 
-                "Genes are the parameters that define the solution to optimize. Represented by one or more number sliders.", GH_ParamAccess.list);   // OR GENEPOOLS?
+                "Genes are the parameters that define the solution to optimize. Represented by one or more number sliders.", GH_ParamAccess.list);   // OR Genepools?
             pManager.AddNumberParameter("Objectives", "O", 
                 "Objectives to optimize: these represent the fitnesses produced by the changing variables. Should be two or more Number values.", GH_ParamAccess.list);
         }
 
 
         // Registers all the output parameters for this component.
-        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
-        { } 
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager) { } 
 
 
         // Solves the Component Solution
-        protected override void SolveInstance(IGH_DataAccess DA)
-        {          
-            //var fitnesses = new List<double>();
-
-            //foreach (IGH_Param source in Params.Input[0].Sources)
-            //{
-            //    foreach (var item in source.VolatileData.AllData(false))
-            //    {
-            //        double fitness = new double();
-            //        if (GH_Convert.ToDouble(item, out fitness, GH_Conversion.Both))
-            //            fitnesses.Add(fitness);
-            //    }
-            //}
-
-            //DA.SetDataList("Output", fitnesses);
-        }
+        protected override void SolveInstance(IGH_DataAccess DA) { }
 
 
         // Provides an Icon (24x24 pixels) for every component that will be visible in the User Interface.

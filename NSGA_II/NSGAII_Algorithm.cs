@@ -2,10 +2,17 @@
 using System.Linq;
 using System.Diagnostics;
 using System.ComponentModel;
-using Grasshopper.Kernel;
 
 namespace NSGA_II
 {
+    // Objective of the optimization: Minimize, or Maximize fitness
+    public enum Objectives
+    { 
+        Minimize,
+        Maximize
+    }
+
+
     public static class NSGAII_Algorithm
     {
         // Initial Optimization Parameters
@@ -17,8 +24,8 @@ namespace NSGA_II
         public static Stopwatch stopWatch = new Stopwatch();
         public static int MaxDuration = 5400;   // In Seconds (= 1h30)
 
-        public static bool Minimize = true;
-        
+        public static List<Objectives> ObjectiveList;
+
         public const double probabilityCrossover = 0.95;
         public const double probabilityMutation = 0.05;
 
@@ -74,7 +81,6 @@ namespace NSGA_II
             var component = e.Argument as NSGAII_GHComponent;
             var GhHandler = new GH_ParameterHandler(component);
 
-            //GhHandler.SetSliderValues();
 
 
             // START OPTIMIZATION
@@ -95,17 +101,18 @@ namespace NSGA_II
 
                 foreach (var front in pop.fronts)
                 {
+                    pop.CrowdingDistance(front);
+                    var orderedFront = front.OrderBy(p => p.rank).ThenByDescending(p => p.crowdingDistance).ToList();
+
                     if (newGeneration.Count + front.Count > PopulationSize)
                     {
-                        pop.CrowdingDistance(front);
-                        var orderedFront = front.OrderBy(p => p.rank).ThenByDescending(p => p.crowdingDistance).ToList();
                         for (int j = newGeneration.Count; j < PopulationSize; j++)
                             newGeneration.Add(orderedFront[j - newGeneration.Count]);
                         break;
                     }
                     else
                     {
-                        newGeneration.AddRange(front);
+                        newGeneration.AddRange(orderedFront);
                     }
                 }
 

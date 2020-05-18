@@ -2,12 +2,14 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
+
 
 namespace NSGA_II
 {
@@ -33,30 +35,26 @@ namespace NSGA_II
 
             InitializeComponent();     // <- Windows Forms Window
             InitializeOptimization();
+            InitializeFitnessDataGrid();
 
             TimeChecked = TimeCheckBox.Checked;
             GenerationsChecked = GenerationsCheckBox.Checked;
 
-            //for (int i = 0; i < 3; i++)// GH_Component.Params.Input[1].SourceCount; i++)
-            //{
-            //    DataGridViewRow row = (DataGridViewRow)FitnessDataGrid.Rows[0].Clone();
-            //    FitnessDataGrid.Rows.Add(row);
-            //    ////DataGridViewCheckBoxCell inUseCheckBox = new DataGridViewCheckBoxCell() { Selected = true };
-            //    //row.Cells[0].Selected = true;
-            //    ////DataGridViewCheckBoxCell FitnessTextkBox = new DataGridViewCheckBoxCell() { Value = "Fitness " + (i + 1) };
-            //    //row.Cells["Fitnesses"].Value = "Fitness " + (i + 1);
-            //    ////DataGridViewCheckBoxCell MinimizeCheckBox = new DataGridViewCheckBoxCell() { Selected = true };
-            //    //row.Cells["Minimize"].Selected = true;
-            //    ////DataGridViewCheckBoxCell MaximizeCheckBox = new DataGridViewCheckBoxCell() { Selected = false };
-            //    //row.Cells["Maximize"].Selected = false;
 
-                
-            //}
+            // Initialize list of objectives (default => Minimize)
+            NSGAII_Algorithm.ObjectiveList = new List<Objectives>();
 
-                
-                
+            for (int i = 0; i < GH_Component.Params.Input[1].SourceCount; i++)
+                NSGAII_Algorithm.ObjectiveList.Add(Objectives.Minimize);  
 
-            
+
+            // Initialize list of Fitness Names
+            visualizer.fitnessNames = new List<string>();
+
+            for (int i = 0; i < GH_Component.Params.Input[1].SourceCount; i++)
+                visualizer.fitnessNames.Add(FitnessDataGrid.Rows[i].Cells[0].Value.ToString());
+
+
 
 
             // Asynchronous Run Optimization
@@ -76,7 +74,7 @@ namespace NSGA_II
 
 
         // InitializeOptimization: Initializes statistics and parameters for the optimization (When Editor Window is opened and when Reset button is pressed)
-        public void InitializeOptimization()
+        private void InitializeOptimization()
         {
             NSGAII_Algorithm.currentGeneration = 0;
             NSGAII_Algorithm.stopWatch = new Stopwatch();
@@ -89,6 +87,27 @@ namespace NSGA_II
         }
 
 
+        // InitializeFitnessDataGrid: Initializes Fitness Data Grid with information about the fitness inputs
+        private void InitializeFitnessDataGrid() 
+        {
+            DataTable table = new DataTable();
+
+            table.Columns.Add("Fitnesses", typeof(string));
+            table.Columns.Add("Min", typeof(bool));
+            table.Columns.Add("Max", typeof(bool));
+
+            for (int i = 0; i < GH_Component.Params.Input[1].SourceCount; i++)
+                table.Rows.Add("Fitness " + (i + 1), true, false);
+
+            FitnessDataGrid.DataSource = table;
+
+            FitnessDataGrid.Columns["Fitnesses"].Width = 132;
+            FitnessDataGrid.Columns["Min"].Width = 70;
+            FitnessDataGrid.Columns["Max"].Width = 70;
+
+            FitnessDataGrid.AllowUserToAddRows = false;
+        }
+        
 
 
         #region Background worker Event Handlers
@@ -117,7 +136,7 @@ namespace NSGA_II
             visualizer.TimeElapsed.Text = "Time Elapsed: " + TimeSpan.FromSeconds(NSGAII_Algorithm.stopWatch.Elapsed.TotalSeconds).ToString(@"hh\:mm\:ss");
 
             visualizer.AddPointsWithLabels(NSGAII_Algorithm.archive, visualizer.ParetoChart.Series[0]);
-            visualizer.AddPointsWithLabels(NSGAII_Algorithm.paretoHistory, visualizer.ParetoChart.Series[1]);
+            visualizer.AddPointsWithLabels(NSGAII_Algorithm.currentParetoFront, visualizer.ParetoChart.Series[1]);
         }
         #endregion
 
@@ -216,10 +235,10 @@ namespace NSGA_II
         // RunOptimizationButton_Click: Event Method for when the Run Optimization Button is pressed
         private void RunOptimizationButton_Click(object sender, EventArgs e)
         {
-            //if (GH_Component.Params.Input[0].Sources.Count < 1)
-            //    MessageBox.Show("Component must have at least one slider gene input", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //else if (GH_Component.Params.Input[1].Sources.Count < 1)
-            //    MessageBox.Show("Component must have at least two fitness inputs", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (GH_Component.Params.Input[0].Sources.Count < 1)
+                MessageBox.Show("Component must have at least one slider gene input", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            else if (GH_Component.Params.Input[1].Sources.Count < 2)
+                MessageBox.Show("Component must have at least two fitness inputs", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             if (TimeCheckBox.Checked == false && GenerationsCheckBox.Checked == false)
                 MessageBox.Show("Select a Stop condition", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             else if (backgroundWorker.IsBusy == false)
@@ -231,13 +250,18 @@ namespace NSGA_II
                 RunOptimizationButton.ForeColor = SystemColors.ButtonShadow;
                 RunOptimizationButton.FlatStyle = FlatStyle.Flat;
 
+                // Set Chart Axis Labels 
+                visualizer.ParetoChart.ChartAreas["ChartArea"].AxisX.Title = visualizer.fitnessNames[0].ToUpper();     // Implement: choice of fitnesses per axis
+                visualizer.ParetoChart.ChartAreas["ChartArea"].AxisY.Title = visualizer.fitnessNames[1].ToUpper();     // Right now, only the first and second fitnesses appear in the chart
+
                 // Start Optimization in the background worker
                 backgroundWorker.RunWorkerAsync(GH_Component);
             }
         }
 
 
-        // ResetButton_Click: Toggles between Stop/Reset Optimization if the the latter is running
+        // ResetButton_Click: Toggles between Stop/Reset Optimization if the the latter is running 
+        // (Optimization only stops after the current generation finishes)
         private void StopResetButton_Click(object sender, EventArgs e)
         {
             // Stop Functionality:
@@ -266,12 +290,55 @@ namespace NSGA_II
             }
         }
 
+
+        // FitnessDataGrid_CellValueChanged: Event Method triggered when a cell's value is changed
+        private void FitnessDataGrid_CellValueChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            DataGridViewCell cell = FitnessDataGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
+
+            // Fitness Name
+            if (e.ColumnIndex == 0)
+            {
+                visualizer.fitnessNames[e.RowIndex] = cell.Value.ToString();
+            }
+
+            // Minimize Column
+            else if (e.ColumnIndex == 1)
+            {
+                DataGridViewCheckBoxCell checkbox = cell as DataGridViewCheckBoxCell;
+                DataGridViewCheckBoxCell maxCellinSameRow = FitnessDataGrid.Rows[e.RowIndex].Cells[2] as DataGridViewCheckBoxCell;
+                maxCellinSameRow.Value = ((bool)checkbox.Value == true) ? false : true;
+
+                if ((bool)checkbox.Value == true)
+                    NSGAII_Algorithm.ObjectiveList[e.RowIndex] = Objectives.Minimize;
+                else
+                    NSGAII_Algorithm.ObjectiveList[e.RowIndex] = Objectives.Maximize;
+            }
+
+            // Maximize Column
+            else if (e.ColumnIndex == 2)
+            {
+                DataGridViewCheckBoxCell checkbox = cell as DataGridViewCheckBoxCell;
+                DataGridViewCheckBoxCell minCellinSameRow = FitnessDataGrid.Rows[e.RowIndex].Cells[1] as DataGridViewCheckBoxCell;
+                minCellinSameRow.Value = ((bool)checkbox.Value == true) ? false : true;
+
+                if ((bool)checkbox.Value == true)
+                    NSGAII_Algorithm.ObjectiveList[e.RowIndex] = Objectives.Maximize;
+                else
+                    NSGAII_Algorithm.ObjectiveList[e.RowIndex] = Objectives.Minimize;
+            }
+        }
+
+
+        // FitnessDataGrid_CellMouseUp: Needed for CheckBox Bug in Data Grid Views
+        private void FitnessDataGrid_CellMouseUp(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.ColumnIndex != 0)
+                FitnessDataGrid.EndEdit();
+        }
+
         #endregion
 
-        private void GenesDataGrid_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
     }
 
 }

@@ -9,8 +9,9 @@ The NSGA-II is an improved version of the original NSGA algorithm (an extension 
 
 <p align="center">
   <img src="NSGA_II/Images/Grasshopper Components.jpg" width="600">
-Figure 1 - NSGA-II component workflow
 </p>
+
+<p align="center">Figure 1 - NSGA-II component workflow</p>
 
 This project implements the NSGA-II algorithm as a custom component for Grasshopper (see Figure 1). Similar to other optimization components for Grasshopper (e.g. Galapagos, Octopus), the developed component receives as inputs a collection of gene sliders as well as a number of fitness/objectives for the optimization. Once the optimization process starts, the component changes the values of the gene sliders to the evolved gene values and waits for the solution to propagate these changes and recalculate the new fitnesses. This process is repeated iteratively until the optimization reaches its end or is stopped by the user. To visualize the results, a custom Graphical User Interface was implemented using Windows Forms that works both as an editor to set-up the optimization settings and visualize the results once the optimization concludes.
 
@@ -18,8 +19,9 @@ This project implements the NSGA-II algorithm as a custom component for Grasshop
 
 <p align="center">
   <img src="NSGA_II/Images/NSGA-II Editor Interface.png" width="800">
-Figure 2 - NSGA-II Editor interface
 </p>
+
+<p align="center"> Figure 2 - NSGA-II Editor interface </p>
 
 The plug-in's interface (see Figure 2) can be opened with a mouse double-click on the Grasshopper NSGA-II component. The interface is divided into 5 parts:
 
@@ -42,6 +44,16 @@ Statistics showing the settings and progression of the optimization process.
 <b>5. PARETO CHART</b>
 
 Shows the resulting solutions as points in a 2D chart. Solution History represents all of the solutions tested since the start of the optimization process, while Pareto Solutions shows the solutions found in the Non-Dominated Pareto-Front of the last generation.
+
+## 3. Results
+
+Once an optimization is complete, the results will show in the Pareto Chart.
+
+<p align="center">
+  <img src="NSGA_II/Images/Results Chart.png" width="800">
+</p>
+
+<p align="center">Figure 3 - Optimization results</p>
 
 
 

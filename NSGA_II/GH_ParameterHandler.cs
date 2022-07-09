@@ -34,8 +34,9 @@ namespace NSGA_II
 
             InitializeGeneInputs();
 
-            //ghDoc.SolutionEnd += new GH_Document.SolutionEndEventHandler(OnSolutionEnd);
-            //waitHandle = new AutoResetEvent(false);
+            ghDoc.SolutionEnd += new GH_Document.SolutionEndEventHandler(OnSolutionEnd);
+            waitHandle = new AutoResetEvent(false);
+            waitHandle.Reset();
         }
 
 
@@ -118,17 +119,17 @@ namespace NSGA_II
         // Recalculate: Recalculates Grasshopper solution
         private void RecalculateSolution()
         {
-            //ghDoc.ScheduleSolution(1);
-            //waitHandle.WaitOne();
+            ghDoc.ScheduleSolution(1);
+            waitHandle.WaitOne();
 
-            ghDoc.NewSolution(false, GH_SolutionMode.CommandLine);
-            while (ghDoc.SolutionState != GH_ProcessStep.PostProcess || ghDoc.SolutionDepth != 0) { }
+            //ghDoc.NewSolution(false, GH_SolutionMode.CommandLine);
+            //while (ghDoc.SolutionState != GH_ProcessStep.PostProcess || ghDoc.SolutionDepth != 0) { }
         }
 
-        //private void OnSolutionEnd(object sender, GH_SolutionEventArgs e)
-        //{
-        //    waitHandle.Set();
-        //}
+        private void OnSolutionEnd(object sender, GH_SolutionEventArgs e)
+        {
+            waitHandle.Set();
+        }
 
 
 

@@ -1,0 +1,37 @@
+# NSGA-II Multi-Objective Optimization Component for Grasshopper
+
+
+## 1. Non-dominated Sorting Genetic Algorithm II (NSGA-II)
+
+The NSGA-II is an improved version of the original NSGA algorithm (an extension of the simple Genetic Algorithm (GA) for Multiple-Objective Optimization) that uses a fast Non-Dominated Sorting approach to subdivide the population into Fronts, based on how many individuals they dominate over. In this algorithm, an initial population of solutions breeds to produce offspring in a process of Crossover and Mutation similar to the classic GA. The union of this initial parent population and its offspring is then sorted using a Non-Dominated Sorting approach into a hierarchy of sub-populations (fronts) based on the ordering of Pareto dominance. The next generation of parents is then selected from these sub-populations based on both rank and crowding distance, in order to promote both a good-performing and diverse front of non-dominated solutions (Source: [Deb et al., 2002](https://ieeexplore.ieee.org/document/996017)).
+
+## 2. Implementation
+
+This project implements the NSGA-II algorithm as a custom component for Grasshopper. Similar to other optimization components for Grasshopper (e.g. Galapagos, Octopus), the developed component receives as inputs a collection of gene sliders as well as a number of fitness/objectives for the optimization. Once the optimization process starts, the component changes the values of the gene sliders to the evolved gene values and waits for the solution to propagate these changes and recalculate the new fitnesses. This process is repeated iteratively until the optimization reaches its end or is stopped by the user. To visualize the results, a custom Graphical User Interface was implemented using Windows Forms that works both as an editor to set-up the optimization settings and visualize the results once the optimization concludes.
+
+### Plug-in Interface 
+
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/88082253/159674838-25bc9ee8-192a-4ce8-aadc-b366051ae793.png" width="800">
+</p>
+
+1. POPULATION SIZE
+Defines the number of solutions per generation. Allows a maximum size of 500 solutions per generation.
+
+2. OPTIMIZATION OPTIONS
+The Stop Condition of the optimization can be selected as either a given maximum number of generations, a given maximum time duration, or both. The Run Optimization button starts the optimization process, while the Stop button stops it once the current generation has been completed. Once stopped, the Stop button can be used to Reset a new optimization.
+
+3. FITNESSES OBJECTIVES
+Shows the plugged fitnesses and allows the user to name them and give them an objective - Minimize or Maximize.
+
+4. OPTIMIZATION STATISTICS
+Statistics showing the settings and progression of the optimization process.
+
+5. PARETO CHART
+Shows the resulting solutions as points in a 2D chart. Solution History represents all of the solutions tested since the start of the optimization process, while Pareto Solutions shows the solutions found in the Non-Dominated Pareto-Front of the last generation.
+
+
+
+### Algorithm pseudocode reference
+
+[Deb, K., Pratap, A., Agarwal, S., & Meyarivan, T. A. M. T. (2002). A fast and elitist multiobjective genetic algorithm: NSGA-II. IEEE transactions on evolutionary computation, 6(2), pp. 182-197.](https://ieeexplore.ieee.org/document/996017)

@@ -8,7 +8,7 @@ The NSGA-II is an improved version of the original NSGA algorithm (an extension 
 ## 2. Implementation
 
 <p align="center">
-  <img src="NSGA_II/Images/Grasshopper Components.jpg" width="800">
+  <img src="NSGA_II/Images/Grasshopper Components.jpg" width="600">
 Figure 1 - NSGA-II component workflow
 </p>
 
@@ -18,21 +18,29 @@ This project implements the NSGA-II algorithm as a custom component for Grasshop
 
 <p align="center">
   <img src="NSGA_II/Images/NSGA-II Editor Interface.png" width="800">
+Figure 2 - NSGA-II Editor interface
 </p>
 
-1. POPULATION SIZE
+The plug-in's interface (see Figure 2) can be opened with a mouse double-click on the Grasshopper NSGA-II component. The interface is divided into 5 parts:
+
+<b>1. POPULATION SIZE</b>
+
 Defines the number of solutions per generation. Allows a maximum size of 500 solutions per generation.
 
-2. OPTIMIZATION OPTIONS
+<b>2. OPTIMIZATION OPTIONS</b>
+
 The Stop Condition of the optimization can be selected as either a given maximum number of generations, a given maximum time duration, or both. The Run Optimization button starts the optimization process, while the Stop button stops it once the current generation has been completed. Once stopped, the Stop button can be used to Reset a new optimization.
 
-3. FITNESSES OBJECTIVES
+<b>3. FITNESSES OBJECTIVES</b>
+
 Shows the plugged fitnesses and allows the user to name them and give them an objective - Minimize or Maximize.
 
-4. OPTIMIZATION STATISTICS
+<b>4. OPTIMIZATION STATISTICS</b>
+
 Statistics showing the settings and progression of the optimization process.
 
-5. PARETO CHART
+<b>5. PARETO CHART</b>
+
 Shows the resulting solutions as points in a 2D chart. Solution History represents all of the solutions tested since the start of the optimization process, while Pareto Solutions shows the solutions found in the Non-Dominated Pareto-Front of the last generation.
 
 

@@ -8,10 +8,11 @@ The NSGA-II is an improved version of the original NSGA algorithm (an extension 
 ## 2. Implementation
 
 <p align="center">
-  <img src="NSGA_II/Images/Grasshopper Components.png" width="800">
+  <img src="NSGA_II/Images/Grasshopper Components.jpg" width="800">
+Figure 1 - NSGA-II component workflow
 </p>
 
-This project implements the NSGA-II algorithm as a custom component for Grasshopper. Similar to other optimization components for Grasshopper (e.g. Galapagos, Octopus), the developed component receives as inputs a collection of gene sliders as well as a number of fitness/objectives for the optimization. Once the optimization process starts, the component changes the values of the gene sliders to the evolved gene values and waits for the solution to propagate these changes and recalculate the new fitnesses. This process is repeated iteratively until the optimization reaches its end or is stopped by the user. To visualize the results, a custom Graphical User Interface was implemented using Windows Forms that works both as an editor to set-up the optimization settings and visualize the results once the optimization concludes.
+This project implements the NSGA-II algorithm as a custom component for Grasshopper (see Figure 1). Similar to other optimization components for Grasshopper (e.g. Galapagos, Octopus), the developed component receives as inputs a collection of gene sliders as well as a number of fitness/objectives for the optimization. Once the optimization process starts, the component changes the values of the gene sliders to the evolved gene values and waits for the solution to propagate these changes and recalculate the new fitnesses. This process is repeated iteratively until the optimization reaches its end or is stopped by the user. To visualize the results, a custom Graphical User Interface was implemented using Windows Forms that works both as an editor to set-up the optimization settings and visualize the results once the optimization concludes.
 
 ### Plug-in Interface 
 
